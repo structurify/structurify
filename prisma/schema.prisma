@@ -1,0 +1,129 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "fullTextSearch", "tracing"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [uuidOssp(map: "uuid-ossp")]
+}
+
+model User {
+  id        String    @id @default(uuid()) @db.Uuid
+  firstName String?
+  lastName  String?
+  username  String    @unique
+  email     String    @unique
+  password  String
+  createdAt DateTime  @default(now())
+  createdBy Json
+  updatedAt DateTime  @updatedAt
+  updatedBy Json
+  deletedAt DateTime?
+  deletedBy Json?
+  metadata  Json?
+
+  membership Member[]
+
+  @@map("users")
+}
+
+model Organization {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+  createdBy Json
+  updatedAt DateTime  @updatedAt
+  updatedBy Json
+  deletedAt DateTime?
+  deletedBy Json?
+  metadata  Json?
+
+  projects Project[]
+  members  Member[]
+  invites  Invite[]
+
+  @@map("organizations")
+}
+
+model Member {
+  userId         String     @db.Uuid
+  organizationId String     @db.Uuid
+  role           MemberRole
+  createdAt      DateTime   @default(now())
+  createdBy      Json
+  updatedAt      DateTime   @updatedAt
+  updatedBy      Json
+  deletedAt      DateTime?
+  deletedBy      Json?
+  metadata       Json?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, organizationId])
+  @@map("members")
+}
+
+enum MemberRole {
+  OWNER
+  ADMINISTRATOR
+  DEVELOPER
+}
+
+model Invite {
+  id             String       @id @default(uuid()) @db.Uuid
+  email          String       @db.Uuid
+  organizationId String       @db.Uuid
+  token          String
+  status         InviteStatus
+  role           MemberRole
+  expiresAt      DateTime
+  createdAt      DateTime     @default(now())
+  createdBy      Json
+  updatedAt      DateTime     @updatedAt
+  updatedBy      Json
+  deletedAt      DateTime?
+  deletedBy      Json?
+  metadata       Json?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([email, organizationId])
+  @@map("invites")
+}
+
+enum InviteStatus {
+  SENT
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+model Project {
+  id             String        @id @default(uuid()) @db.Uuid
+  name           String
+  status         ProjectStatus
+  organizationId String        @unique @db.Uuid
+  createdAt      DateTime      @default(now())
+  createdBy      Json
+  updatedAt      DateTime      @updatedAt
+  updatedBy      Json
+  deletedAt      DateTime?
+  deletedBy      Json?
+  metadata       Json?
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@map("projects")
+}
+
+enum ProjectStatus {
+  ACTIVE
+  INACTIVE
+}
