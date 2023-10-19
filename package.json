@@ -127,5 +127,6 @@
   },
   "prisma": {
     "seed": "ts-node ./prisma/seed/init.ts"
-  }
+  },
+  "packageManager": "yarn@3.6.4"
 }

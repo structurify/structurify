@@ -39,3 +39,5 @@ lerna-debug.log*
 .env.development
 .env.staging
 .env.production
+
+.yarn/cache/*
