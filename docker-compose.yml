@@ -77,6 +77,21 @@ services:
       - minio1
       - minio2
 
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - 1030:1025
+      - 8030:8025
+    healthcheck:
+      test: ['CMD', 'echo | telnet 127.0.0.1 8025']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    environment:
+      MH_STORAGE: maildir
+    volumes:
+      - ./infra/mailhog/data:/maildir
+
 volumes:
   postgres:
   cache:

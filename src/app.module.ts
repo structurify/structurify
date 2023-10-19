@@ -11,6 +11,13 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ScheduleModule } from '@nestjs/schedule';
+import {
+  I18nModule,
+  AcceptLanguageResolver,
+  QueryResolver,
+  HeaderResolver,
+} from 'nestjs-i18n';
+import { join } from 'path';
 
 // Providers
 import { PrismaModule } from '@providers/db/prisma/prisma.module';
@@ -21,6 +28,7 @@ import { EventsModule } from '@modules/events/events.module';
 import { HealthModule } from '@modules/health/health.module';
 import { UsersModule } from '@modules/users/users.module';
 import { OrganizationsModule } from '@modules/organizations/organizations.module';
+import { CommunicationModule } from '@modules/communication/communication.module';
 
 const modules: Array<
   Type | DynamicModule | Promise<DynamicModule> | ForwardReference
@@ -47,12 +55,29 @@ const modules: Array<
     }),
     inject: [ConfigService],
   }),
+  I18nModule.forRootAsync({
+    useFactory: (configService: ConfigService) => ({
+      fallbackLanguage: configService.getOrThrow('I18N_FALLBACK_LANGUAGE'),
+      loaderOptions: {
+        path: join(__dirname, '/src/i18n/'),
+        watch: true,
+      },
+    }),
+    resolvers: [
+      { use: QueryResolver, options: ['lang'] },
+      AcceptLanguageResolver,
+      new HeaderResolver(['x-lang']),
+    ],
+    inject: [ConfigService],
+  }),
+
   ScheduleModule.forRoot(),
   HealthModule,
   AuthModule,
   UsersModule,
   OrganizationsModule,
   EventsModule,
+  CommunicationModule,
 ];
 
 const controllers: any[] = [];

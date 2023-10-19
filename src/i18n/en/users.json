@@ -1,0 +1,8 @@
+{
+  "emails": {
+    "welcome": {
+      "subject": "Welcome to the site!",
+      "body": "Hi {username}, Welcome to the site!"
+    }
+  }
+}

@@ -22,6 +22,12 @@
       {
         "include": ".env.production",
         "outDir": "dist/src"
+      },
+      { "include": "i18n/**/*", "outDir": "dist/src", "watchAssets": true },
+      {
+        "include": "templates/**/*",
+        "outDir": "dist/src",
+        "watchAssets": true
       }
     ],
     "plugins": [

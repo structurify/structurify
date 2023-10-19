@@ -6,6 +6,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import * as bodyParser from 'body-parser';
 import * as compression from 'compression';
+import { I18nValidationPipe } from 'nestjs-i18n';
 
 export function setupGeneric(app: INestApplication) {
   app.use(bodyParser.json());
@@ -19,5 +20,6 @@ export function setupGeneric(app: INestApplication) {
       whitelist: true,
     }),
   );
+  app.useGlobalPipes(new I18nValidationPipe());
   app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
 }
