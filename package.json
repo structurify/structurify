@@ -1,10 +1,17 @@
 {
-  "name": "headless-platform-starter",
+  "name": "@structurify/structurify",
   "version": "0.0.1",
   "description": "",
-  "author": "",
   "private": true,
-  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/structurify/structurify.git"
+  },
+  "author": "Marcin Mrotek",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/structurify/structurify/issues"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
