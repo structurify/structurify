@@ -89,6 +89,12 @@ import { PrismaModule } from '@providers/db/prisma/prisma.module';
     }),
   ],
   providers: [],
-  exports: [CacheModule, MinioModule, MeiliSearchModule],
+  exports: [
+    CacheModule,
+    MinioModule,
+    MeiliSearchModule,
+    ConfigModule,
+    I18nModule,
+  ],
 })
 export class CoreModule {}

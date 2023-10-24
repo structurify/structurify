@@ -127,7 +127,7 @@ export class ProjectResolver {
   }
 
   @Mutation((_) => Project)
-  async projectTranser(
+  async projectTransfer(
     @Args('input') { id, newOrganizationId }: TransferProjectInput,
     @CurrentUser() user: User,
   ) {
