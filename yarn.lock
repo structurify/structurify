@@ -1892,7 +1892,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api@npm:1.6.0, @opentelemetry/api@npm:^1.0.0":
+"@opentelemetry/api@npm:1.6.0, @opentelemetry/api@npm:^1.0.0, @opentelemetry/api@npm:^1.6.0":
   version: 1.6.0
   resolution: "@opentelemetry/api@npm:1.6.0"
   checksum: 3283b78b62a39f6568eaa050ac7045fcca747679e255874f6d2107cb8e1a3b2e10bfbf553c3e82a72500fb5fdca49dc07a5fe27fd6980debac24506cca638859
@@ -3133,6 +3133,7 @@ __metadata:
     "@nestjs/schematics": ^10.0.0
     "@nestjs/terminus": ^10.1.1
     "@nestjs/testing": ^10.0.0
+    "@opentelemetry/api": ^1.6.0
     "@opentelemetry/auto-instrumentations-node": ^0.39.4
     "@opentelemetry/exporter-jaeger": ^1.17.1
     "@opentelemetry/exporter-metrics-otlp-proto": ^0.44.0
