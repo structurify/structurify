@@ -3,7 +3,6 @@
 # ------------------------------------------------------
 
 input AcceptInviteInput {
-  slug: String!
   token: String!
 }
 

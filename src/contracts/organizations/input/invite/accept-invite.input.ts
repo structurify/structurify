@@ -7,9 +7,4 @@ export class AcceptInviteInput {
   @IsString()
   @IsNotEmpty()
   public token: string;
-
-  @Field((_) => String)
-  @IsUUID(4)
-  @IsNotEmpty()
-  public slug: string;
 }
