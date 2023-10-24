@@ -67,6 +67,7 @@ export class OrganizationResolver {
       organizationId: organization.id,
       userId: user.id,
       role: MemberRole.OWNER,
+      isOwner: true,
       createdBy: {
         user: user.id,
       },
