@@ -2,13 +2,16 @@ import { Module } from '@nestjs/common';
 
 import { UsersModule } from '@modules/users/users.module';
 import { UsersService } from '@modules/users/services';
+
+import { CommunicationModule } from '@modules/communication/communication.module';
+import { CoreModule } from '@modules/core/core.module';
+
 import {
   OrganizationsService,
   ProjectsService,
   MembersService,
-  InvitationsService,
+  InvitesService,
 } from './services';
-import { CommunicationModule } from '@modules/communication/communication.module';
 import { MailingRepository } from '../communication/repositories';
 import {
   OrganizationResolver,
@@ -20,7 +23,7 @@ import { UserListener } from './listeners';
 import { InviteJob } from './jobs';
 
 @Module({
-  imports: [UsersModule, CommunicationModule],
+  imports: [UsersModule, CommunicationModule, CoreModule],
   providers: [
     OrganizationsService,
     ProjectsService,
@@ -30,7 +33,7 @@ import { InviteJob } from './jobs';
     UserListener,
     InviteJob,
     MembersService,
-    InvitationsService,
+    InvitesService,
     MailingRepository,
     InviteResolver,
     MemberResolver,
@@ -39,7 +42,7 @@ import { InviteJob } from './jobs';
     OrganizationsService,
     ProjectsService,
     MembersService,
-    InvitationsService,
+    InvitesService,
   ],
 })
 export class OrganizationsModule {}

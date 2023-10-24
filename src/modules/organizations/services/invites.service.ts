@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Inject,
   Logger,
   NotFoundException,
   BadRequestException,
@@ -9,6 +10,8 @@ import * as dayjs from 'dayjs';
 import { ConfigService } from '@nestjs/config';
 import { generate } from 'generate-password';
 import { I18nService } from 'nestjs-i18n';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 import { PrismaService } from '@providers/db/prisma/services/prisma.service';
 import { EventsService } from '@modules/events/services';
@@ -30,10 +33,11 @@ import { EventAction } from '@app/contracts/events';
 import { MailingRepository } from '@modules/communication/repositories';
 
 @Injectable()
-export class InvitationsService {
-  private readonly logger = new Logger(InvitationsService.name);
+export class InvitesService {
+  private readonly logger = new Logger(InvitesService.name);
 
   constructor(
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
     private readonly prisma: PrismaService,
     private readonly eventsService: EventsService,
     private readonly mailingRepository: MailingRepository,
@@ -42,21 +46,49 @@ export class InvitationsService {
   ) {}
 
   async findOneById(id: string): Promise<Invite | null> {
-    return this.prisma.invite.findUnique({
+    const cachedData = await this.cacheService.get<Invite>(`Invite-${id}/ID`);
+    if (cachedData) {
+      this.logger.debug(`Invite-${id}/ID found in cache`);
+      return cachedData;
+    }
+
+    const invite = await this.prisma.invite.findUnique({
       where: {
         id,
         deletedAt: null,
       },
     });
+
+    if (!!invite) {
+      await this.cacheService.set(`Invite-${id}/ID`, invite);
+      this.logger.debug(`Invite-${id}/ID stored in cache`);
+    }
+
+    return invite;
   }
 
   async findOneByToken(token: string): Promise<Invite | null> {
-    return this.prisma.invite.findUnique({
+    const cachedData = await this.cacheService.get<Invite>(
+      `Invite-${token}/Token`,
+    );
+    if (cachedData) {
+      this.logger.debug(`Invite-${token}/Token found in cache`);
+      return cachedData;
+    }
+
+    const invite = await this.prisma.invite.findUnique({
       where: {
         token,
         deletedAt: null,
       },
     });
+
+    if (!!invite) {
+      await this.cacheService.set(`Invite-${token}/Token`, invite);
+      this.logger.debug(`Invite-${token}/Token stored in cache`);
+    }
+
+    return invite;
   }
 
   async findAll({
@@ -106,7 +138,7 @@ export class InvitationsService {
       lowercase: true,
     });
 
-    const invitation = await this.prisma.invite.create({
+    const invite = await this.prisma.invite.create({
       data: {
         token,
         email: dto.email,
@@ -124,8 +156,11 @@ export class InvitationsService {
       },
     });
 
-    this.logger.debug('sendInvite - invitation', {
-      invitation,
+    await this.cacheService.set(`Invite-${invite.id}/ID`, invite);
+    this.logger.debug(`Invite-${invite.id}/ID stored in cache`);
+
+    this.logger.debug('sendInvite - invite', {
+      invite,
     });
 
     const context = {
@@ -150,14 +185,14 @@ export class InvitationsService {
 
     this.eventsService.emitEvent({
       entity: 'Invitation',
-      entityId: `Organization-${invitation.organizationId}/Invitation-${invitation.id}`,
+      entityId: `Organization-${invite.organizationId}/Invitation-${invite.id}`,
       eventName: OrganizationEvents.INVITE_CREATED,
       event: new InviteCreatedEvent(),
       action: EventAction.CREATE,
-      after: invitation,
+      after: invite,
     });
 
-    return invitation;
+    return invite;
   }
 
   async resendInvite(dto: ResendInviteDto): Promise<Invite> {
@@ -195,6 +230,12 @@ export class InvitationsService {
         updatedBy: dto.updatedBy,
       },
     });
+
+    await this.cacheService.set(
+      `Invite-${updatedInvitation.id}/ID`,
+      updatedInvitation,
+    );
+    this.logger.debug(`Invite-${updatedInvitation.id}/ID updated in cache`);
 
     this.logger.debug('resendInvite - updatedInvitation', {
       updatedInvitation,
@@ -266,6 +307,9 @@ export class InvitationsService {
       },
     });
 
+    await this.cacheService.del(`Invite-${updatedInvitation.id}/ID`);
+    this.logger.debug(`Invite-${updatedInvitation.id}/ID deleted from cache`);
+
     this.logger.debug('cancelInvite - updatedInvitation', {
       updatedInvitation,
     });
@@ -333,6 +377,12 @@ export class InvitationsService {
       },
     });
 
+    await this.cacheService.set(
+      `Invite-${updatedInvitation.id}/ID`,
+      updatedInvitation,
+    );
+    this.logger.debug(`Invite-${updatedInvitation.id}/ID updated in cache`);
+
     this.logger.debug('acceptInvite - updatedInvitation', {
       updatedInvitation,
     });
@@ -370,6 +420,12 @@ export class InvitationsService {
         updatedBy: dto.expiredBy,
       },
     });
+
+    await this.cacheService.set(
+      `Invite-${updatedInvitation.id}/ID`,
+      updatedInvitation,
+    );
+    this.logger.debug(`Invite-${updatedInvitation.id}/ID updated in cache`);
 
     this.logger.debug('expireInvite - updatedInvitation', {
       updatedInvitation,

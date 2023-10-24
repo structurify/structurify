@@ -1,5 +1,7 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import { Project, ProjectStatus } from '@prisma/client';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 import { PrismaService } from '@providers/db/prisma/services/prisma.service';
 import { EventsService } from '@modules/events/services';
@@ -20,17 +22,31 @@ export class ProjectsService {
   private readonly logger = new Logger(ProjectsService.name);
 
   constructor(
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
     private readonly prisma: PrismaService,
     private readonly eventsService: EventsService,
   ) {}
 
   async findOneById(id: string): Promise<Project | null> {
-    return this.prisma.project.findUnique({
+    const cachedData = await this.cacheService.get<Project>(`Project-${id}`);
+    if (cachedData) {
+      this.logger.debug(`Project-${id} found in cache`);
+      return cachedData;
+    }
+
+    const project = await this.prisma.project.findUnique({
       where: {
         id,
         deletedAt: null,
       },
     });
+
+    if (!!project) {
+      await this.cacheService.set(`Project-${id}`, project);
+      this.logger.debug(`Project-${id} stored in cache`);
+    }
+
+    return project;
   }
 
   async findAll({
@@ -64,6 +80,9 @@ export class ProjectsService {
       },
     });
 
+    await this.cacheService.set(`Project-${project.id}`, project);
+    this.logger.debug(`Project-${project.id} stored in cache`);
+
     this.eventsService.emitEvent({
       entity: 'Project',
       entityId: `Organization-${project.organizationId}/Project-${project.id}`,
@@ -93,6 +112,9 @@ export class ProjectsService {
         ...rest,
       },
     });
+
+    await this.cacheService.set(`Project-${updatedProject.id}`, updatedProject);
+    this.logger.debug(`Project-${updatedProject.id} updated in cache`);
 
     this.eventsService.emitEvent({
       entity: 'Project',
@@ -125,6 +147,9 @@ export class ProjectsService {
         deletedAt: new Date(),
       },
     });
+
+    await this.cacheService.del(`Project-${updatedProject.id}`);
+    this.logger.debug(`Project-${updatedProject.id} deleted from cache`);
 
     this.eventsService.emitEvent({
       entity: 'Project',

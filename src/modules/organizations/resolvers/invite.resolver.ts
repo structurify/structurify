@@ -13,7 +13,7 @@ import { User } from '@prisma/client';
 import {
   OrganizationsService,
   MembersService,
-  InvitationsService,
+  InvitesService,
 } from '../services';
 
 import {
@@ -36,7 +36,7 @@ export class InviteResolver {
   constructor(
     private readonly membersService: MembersService,
     private readonly organizationsService: OrganizationsService,
-    private readonly invitesService: InvitationsService,
+    private readonly invitesService: InvitesService,
   ) {}
 
   @ResolveField((_) => Organization)

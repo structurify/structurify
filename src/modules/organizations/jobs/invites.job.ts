@@ -1,13 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 
-import { InvitationsService } from '../services';
+import { InvitesService } from '../services';
 
 @Injectable()
 export class InviteJob {
   private readonly logger = new Logger(InviteJob.name);
 
-  constructor(private readonly invitesService: InvitationsService) {}
+  constructor(private readonly invitesService: InvitesService) {}
 
   @Cron('*/1 * * * *')
   async expireInvites() {

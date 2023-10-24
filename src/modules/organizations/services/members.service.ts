@@ -1,5 +1,7 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
 import { Member } from '@prisma/client';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 import { PrismaService } from '@providers/db/prisma/services/prisma.service';
 import { EventsService } from '@modules/events/services';
@@ -20,6 +22,7 @@ export class MembersService {
   private readonly logger = new Logger(MembersService.name);
 
   constructor(
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
     private readonly prisma: PrismaService,
     private readonly eventsService: EventsService,
   ) {}
@@ -28,7 +31,17 @@ export class MembersService {
     organizationId: string,
     userId: string,
   ): Promise<Member | null> {
-    return this.prisma.member.findUnique({
+    const cachedData = await this.cacheService.get<Member>(
+      `Organization-${organizationId}/User-${userId}`,
+    );
+    if (cachedData) {
+      this.logger.debug(
+        `Organization-${organizationId}/User-${userId} found in cache`,
+      );
+      return cachedData;
+    }
+
+    const member = await this.prisma.member.findUnique({
       where: {
         userId_organizationId: {
           userId,
@@ -37,6 +50,18 @@ export class MembersService {
         deletedAt: null,
       },
     });
+
+    if (!!member) {
+      await this.cacheService.set(
+        `Organization-${organizationId}/User-${userId}`,
+        member,
+      );
+      this.logger.debug(
+        `Organization-${organizationId}/User-${userId} stored in cache`,
+      );
+    }
+
+    return member;
   }
 
   async findAll({
@@ -68,6 +93,14 @@ export class MembersService {
         updatedBy: input.createdBy,
       },
     });
+
+    await this.cacheService.set(
+      `Organization-${member.organizationId}/User-${member.userId}`,
+      member,
+    );
+    this.logger.debug(
+      `Organization-${member.organizationId}/User-${member.userId} stored in cache`,
+    );
 
     this.eventsService.emitEvent({
       entity: 'Member',
@@ -101,6 +134,14 @@ export class MembersService {
         ...rest,
       },
     });
+
+    await this.cacheService.set(
+      `Organization-${updatedMember.organizationId}/User-${updatedMember.userId}`,
+      updatedMember,
+    );
+    this.logger.debug(
+      `Organization-${updatedMember.organizationId}/User-${updatedMember.userId} updated in cache`,
+    );
 
     this.eventsService.emitEvent({
       entity: 'Member',
@@ -136,6 +177,13 @@ export class MembersService {
         deletedAt: new Date(),
       },
     });
+
+    await this.cacheService.del(
+      `Organization-${updatedMember.organizationId}/User-${updatedMember.userId}`,
+    );
+    this.logger.debug(
+      `Organization-${updatedMember.organizationId}/User-${updatedMember.userId} deleted from cache`,
+    );
 
     this.eventsService.emitEvent({
       entity: 'Member',

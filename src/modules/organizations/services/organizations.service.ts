@@ -1,6 +1,8 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
 import { Organization } from '@prisma/client';
 import { generate } from 'generate-password';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 import { PrismaService } from '@providers/db/prisma/services/prisma.service';
 import { EventsService } from '@modules/events/services';
@@ -22,17 +24,32 @@ export class OrganizationsService {
   private readonly logger = new Logger(OrganizationsService.name);
 
   constructor(
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
     private readonly prisma: PrismaService,
     private readonly eventsService: EventsService,
   ) {}
 
   async findOneById(id: string): Promise<Organization | null> {
-    return this.prisma.organization.findUnique({
+    const cachedData = await this.cacheService.get<Organization>(
+      `Organization-${id}`,
+    );
+    if (cachedData) {
+      this.logger.debug(`Organization-${id} found in cache`);
+      return cachedData;
+    }
+
+    const organization = await this.prisma.organization.findUnique({
       where: {
         id,
         deletedAt: null,
       },
     });
+
+    if (!!organization) {
+      await this.cacheService.set(`Organization-${id}`, organization);
+      this.logger.debug(`Organization-${id} stored in cache`);
+    }
+    return organization;
   }
 
   async findAll(args: OrganizationsArgs): Promise<[Organization[], number]> {
@@ -51,6 +68,7 @@ export class OrganizationsService {
       }),
     ]);
   }
+
   async findAllByUserId({
     userId,
     ...args
@@ -98,6 +116,12 @@ export class OrganizationsService {
       },
     });
 
+    await this.cacheService.set(
+      `Organization-${organization.id}`,
+      organization,
+    );
+    this.logger.debug(`Organization-${organization.id} stored in cache`);
+
     this.eventsService.emitEvent({
       entity: 'Organization',
       entityId: `Organization-${organization.id}`,
@@ -127,6 +151,12 @@ export class OrganizationsService {
         ...rest,
       },
     });
+
+    await this.cacheService.set(
+      `Organization-${updatedOrganiation.id}`,
+      updatedOrganiation,
+    );
+    this.logger.debug(`Organization-${updatedOrganiation.id} updated in cache`);
 
     this.eventsService.emitEvent({
       entity: 'Organization',
@@ -159,6 +189,11 @@ export class OrganizationsService {
         deletedAt: new Date(),
       },
     });
+
+    await this.cacheService.del(`Organization-${updatedOrganiation.id}`);
+    this.logger.debug(
+      `Organization-${updatedOrganiation.id} removed from cache`,
+    );
 
     this.eventsService.emitEvent({
       entity: 'Organization',
