@@ -13,6 +13,7 @@ import {
   HeaderResolver,
 } from 'nestjs-i18n';
 import { join } from 'path';
+import { MinioModule, MinioService } from 'nestjs-minio-client';
 
 // Providers
 import { PrismaModule } from '@providers/db/prisma/prisma.module';
@@ -65,8 +66,20 @@ import { PrismaModule } from '@providers/db/prisma/prisma.module';
       }),
       inject: [ConfigService],
     }),
+    MinioModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        endPoint: configService.getOrThrow('MINIO_ENDPOINT'),
+        port: Number(configService.getOrThrow('MINIO_PORT')),
+        useSSL: configService.getOrThrow('MINIO_SSL') === 'true',
+        accessKey: configService.getOrThrow('MINIO_ACCESS_KEY'),
+        secretKey: configService.getOrThrow('MINIO_SECRET_KEY'),
+        isGlobal: true,
+      }),
+    }),
   ],
   providers: [],
-  exports: [CacheModule],
+  exports: [CacheModule, MinioModule],
 })
 export class CoreModule {}
