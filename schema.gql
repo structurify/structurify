@@ -127,7 +127,7 @@ type Mutation {
   organizationUpdate(input: UpdateOrganizationInput!): Organization!
   projectCreate(input: CreateProjectInput!): Project!
   projectDelete(input: DeleteProjectInput!): Project!
-  projectTranser(input: TransferProjectInput!): Project!
+  projectTransfer(input: TransferProjectInput!): Project!
   projectUpdate(input: UpdateProjectInput!): Project!
   signIn(input: SignInInput!): SignInResponse!
   signUp(input: SignUpInput!): SignUpResponse!
