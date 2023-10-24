@@ -144,7 +144,16 @@
       "**/*.(t|j)s"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "^@/(.*)$": "<rootDir>/../src/$1",
+      "^@app/(.*)$": "<rootDir>/../src/$1",
+      "^@modules/(.*)$": "<rootDir>/../src/modules/$1",
+      "^@shared/(.*)$": "<rootDir>/../src/shared/$1",
+      "^@providers/(.*)$": "<rootDir>/../src/shared/providers/$1",
+      "^@contracts/(.*)$": "<rootDir>/../src/contracts/$1",
+      "^@decorators/(.*)$": "<rootDir>/../src/shared/decorators/$1"
+    }
   },
   "prisma": {
     "seed": "ts-node ./prisma/seed/init.ts"
