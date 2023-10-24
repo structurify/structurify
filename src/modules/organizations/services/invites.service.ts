@@ -18,7 +18,7 @@ import {
   ResendInviteDto,
   CancelInviteDto,
   AcceptInviteDto,
-  InvitationsArgs,
+  InvitesArgs,
   OrganizationEvents,
   InviteCreatedEvent,
   InviteDeletedEvent,
@@ -34,6 +34,7 @@ import { UsersService } from '@modules/users/services';
 import { PrismaService } from '@providers/db/prisma/services/prisma.service';
 
 import { OrganizationsService } from './organizations.service';
+import { MembersService } from './members.service';
 
 @Injectable()
 export class InvitesService {
@@ -46,6 +47,7 @@ export class InvitesService {
     private readonly mailingRepository: MailingRepository,
     private readonly configService: ConfigService,
     private readonly organizationsService: OrganizationsService,
+    private readonly membersService: MembersService,
     private readonly usersService: UsersService,
     private readonly i18n: I18nService,
   ) {}
@@ -99,7 +101,7 @@ export class InvitesService {
   async findAll({
     organizationId,
     ...args
-  }: InvitationsArgs): Promise<[Invite[], number]> {
+  }: InvitesArgs): Promise<[Invite[], number]> {
     return Promise.all([
       this.prisma.invite.findMany({
         ...args,
@@ -135,11 +137,20 @@ export class InvitesService {
       dto,
     });
 
-    const organization = await this.organizationsService.findOneById(
-      dto.organizationId,
-    );
+    const [organization, primaryMember] = await Promise.all([
+      this.organizationsService.findOneById(dto.organizationId),
+      this.membersService.findPrimaryOwner(dto.organizationId),
+    ]);
     if (!organization) {
       throw new NotFoundException(dto.organizationId);
+    }
+    if (!primaryMember) {
+      throw new NotFoundException();
+    }
+
+    const userOwner = await this.usersService.findOneById(primaryMember.userId);
+    if (!userOwner) {
+      throw new NotFoundException();
     }
 
     const token = generate({
@@ -178,7 +189,7 @@ export class InvitesService {
     const context = this.getInviteEmailContext(
       invite,
       organization,
-      'Abdizriel',
+      userOwner.username,
     );
 
     this.logger.log('sendInvite - context', {
@@ -193,8 +204,8 @@ export class InvitesService {
     });
 
     this.eventsService.emitEvent({
-      entity: 'Invitation',
-      entityId: `Organization-${invite.organizationId}/Invitation-${invite.id}`,
+      entity: 'Invite',
+      entityId: `Organization-${invite.organizationId}/Invite-${invite.id}`,
       eventName: OrganizationEvents.INVITE_CREATED,
       event: new InviteCreatedEvent(),
       action: EventAction.CREATE,
@@ -214,11 +225,20 @@ export class InvitesService {
       throw new NotFoundException(dto.id);
     }
 
-    const organization = await this.organizationsService.findOneById(
-      invite.organizationId,
-    );
+    const [organization, primaryMember] = await Promise.all([
+      this.organizationsService.findOneById(invite.organizationId),
+      this.membersService.findPrimaryOwner(invite.organizationId),
+    ]);
     if (!organization) {
       throw new NotFoundException(invite.organizationId);
+    }
+    if (!primaryMember) {
+      throw new NotFoundException();
+    }
+
+    const userOwner = await this.usersService.findOneById(primaryMember.userId);
+    if (!userOwner) {
+      throw new NotFoundException();
     }
 
     const token = generate({
@@ -229,7 +249,7 @@ export class InvitesService {
       lowercase: true,
     });
 
-    const updatedInvitation = await this.prisma.invite.update({
+    const updatedInvite = await this.prisma.invite.update({
       where: {
         id: dto.id,
         deletedAt: null,
@@ -247,20 +267,17 @@ export class InvitesService {
       },
     });
 
-    await this.cacheService.set(
-      `Invite-${updatedInvitation.id}/ID`,
-      updatedInvitation,
-    );
-    this.logger.debug(`Invite-${updatedInvitation.id}/ID updated in cache`);
+    await this.cacheService.set(`Invite-${updatedInvite.id}/ID`, updatedInvite);
+    this.logger.debug(`Invite-${updatedInvite.id}/ID updated in cache`);
 
-    this.logger.debug('resendInvite - updatedInvitation', {
-      updatedInvitation,
+    this.logger.debug('resendInvite - updatedInvite', {
+      updatedInvite,
     });
 
     const context = this.getInviteEmailContext(
-      updatedInvitation,
+      updatedInvite,
       organization,
-      'Abdizriel',
+      userOwner.username,
     );
 
     this.logger.log('resendInvite - context', {
@@ -275,25 +292,25 @@ export class InvitesService {
     });
 
     this.eventsService.emitEvent({
-      entity: 'Invitation',
-      entityId: `Organization-${invite.organizationId}/Invitation-${invite.id}`,
+      entity: 'Invite',
+      entityId: `Organization-${invite.organizationId}/Invite-${invite.id}`,
       eventName: OrganizationEvents.INVITE_RESENDED,
       event: new InviteResendedEvent(),
       action: EventAction.UPDATE,
       before: invite,
-      after: updatedInvitation,
+      after: updatedInvite,
     });
     this.eventsService.emitEvent({
-      entity: 'Invitation',
-      entityId: `Organization-${invite.organizationId}/Invitation-${invite.id}`,
+      entity: 'Invite',
+      entityId: `Organization-${invite.organizationId}/Invite-${invite.id}`,
       eventName: OrganizationEvents.INVITE_UPDATED,
       event: new InviteUpdatedEvent(),
       action: EventAction.UPDATE,
       before: invite,
-      after: updatedInvitation,
+      after: updatedInvite,
     });
 
-    return updatedInvitation;
+    return updatedInvite;
   }
 
   async cancelInvite(dto: CancelInviteDto): Promise<Invite> {
@@ -306,7 +323,7 @@ export class InvitesService {
       throw new NotFoundException(dto.id);
     }
 
-    const updatedInvitation = await this.prisma.invite.update({
+    const updatedInvite = await this.prisma.invite.update({
       where: {
         id: dto.id,
         deletedAt: null,
@@ -318,24 +335,24 @@ export class InvitesService {
       },
     });
 
-    await this.cacheService.del(`Invite-${updatedInvitation.id}/ID`);
-    this.logger.debug(`Invite-${updatedInvitation.id}/ID deleted from cache`);
+    await this.cacheService.del(`Invite-${updatedInvite.id}/ID`);
+    this.logger.debug(`Invite-${updatedInvite.id}/ID deleted from cache`);
 
-    this.logger.debug('cancelInvite - updatedInvitation', {
-      updatedInvitation,
+    this.logger.debug('cancelInvite - updatedInvite', {
+      updatedInvite,
     });
 
     this.eventsService.emitEvent({
-      entity: 'Invitation',
-      entityId: `Organization-${invitation.organizationId}/Invitation-${invitation.id}`,
+      entity: 'Invite',
+      entityId: `Organization-${invitation.organizationId}/Invite-${invitation.id}`,
       eventName: OrganizationEvents.INVITE_DELETED,
       event: new InviteDeletedEvent(),
       action: EventAction.DELETE,
       before: invitation,
-      after: updatedInvitation,
+      after: updatedInvite,
     });
 
-    return updatedInvitation;
+    return updatedInvite;
   }
 
   async acceptInvite(dto: AcceptInviteDto): Promise<Invite> {
@@ -377,7 +394,7 @@ export class InvitesService {
       );
     }
 
-    const updatedInvitation = await this.prisma.invite.update({
+    const updatedInvite = await this.prisma.invite.update({
       where: {
         token: dto.token,
         deletedAt: null,
@@ -388,27 +405,24 @@ export class InvitesService {
       },
     });
 
-    await this.cacheService.set(
-      `Invite-${updatedInvitation.id}/ID`,
-      updatedInvitation,
-    );
-    this.logger.debug(`Invite-${updatedInvitation.id}/ID updated in cache`);
+    await this.cacheService.set(`Invite-${updatedInvite.id}/ID`, updatedInvite);
+    this.logger.debug(`Invite-${updatedInvite.id}/ID updated in cache`);
 
-    this.logger.debug('acceptInvite - updatedInvitation', {
-      updatedInvitation,
+    this.logger.debug('acceptInvite - updatedInvite', {
+      updatedInvite,
     });
 
     this.eventsService.emitEvent({
-      entity: 'Invitation',
-      entityId: `Organization-${invitation.organizationId}/Invitation-${invitation.id}`,
+      entity: 'Invite',
+      entityId: `Organization-${invitation.organizationId}/Invite-${invitation.id}`,
       eventName: OrganizationEvents.INVITE_UPDATED,
       event: new InviteUpdatedEvent(),
       action: EventAction.UPDATE,
       before: invitation,
-      after: updatedInvitation,
+      after: updatedInvite,
     });
 
-    return updatedInvitation;
+    return updatedInvite;
   }
 
   async expireInvite(dto: ExpireInviteDto): Promise<Invite> {
@@ -421,7 +435,7 @@ export class InvitesService {
       throw new NotFoundException(dto.id);
     }
 
-    const updatedInvitation = await this.prisma.invite.update({
+    const updatedInvite = await this.prisma.invite.update({
       where: {
         id: dto.id,
         deletedAt: null,
@@ -432,37 +446,34 @@ export class InvitesService {
       },
     });
 
-    await this.cacheService.set(
-      `Invite-${updatedInvitation.id}/ID`,
-      updatedInvitation,
-    );
-    this.logger.debug(`Invite-${updatedInvitation.id}/ID updated in cache`);
+    await this.cacheService.set(`Invite-${updatedInvite.id}/ID`, updatedInvite);
+    this.logger.debug(`Invite-${updatedInvite.id}/ID updated in cache`);
 
-    this.logger.debug('expireInvite - updatedInvitation', {
-      updatedInvitation,
+    this.logger.debug('expireInvite - updatedInvite', {
+      updatedInvite,
     });
 
     this.eventsService.emitEvent({
-      entity: 'Invitation',
-      entityId: `Organization-${invitation.organizationId}/Invitation-${invitation.id}`,
+      entity: 'Invite',
+      entityId: `Organization-${invitation.organizationId}/Invite-${invitation.id}`,
       eventName: OrganizationEvents.INVITE_UPDATED,
       event: new InviteUpdatedEvent(),
       action: EventAction.UPDATE,
       before: invitation,
-      after: updatedInvitation,
+      after: updatedInvite,
     });
 
     this.eventsService.emitEvent({
-      entity: 'Invitation',
-      entityId: `Organization-${invitation.organizationId}/Invitation-${invitation.id}`,
+      entity: 'Invite',
+      entityId: `Organization-${invitation.organizationId}/Invite-${invitation.id}`,
       eventName: OrganizationEvents.INVITE_EXPIRED,
       event: new InviteExpiredEvent(),
       action: EventAction.UPDATE,
       before: invitation,
-      after: updatedInvitation,
+      after: updatedInvite,
     });
 
-    return updatedInvitation;
+    return updatedInvite;
   }
 
   private getInviteEmailContext(

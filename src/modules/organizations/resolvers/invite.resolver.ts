@@ -20,7 +20,7 @@ import {
   Invite,
   Organization,
   InvitesResponse,
-  InvitationsArgs,
+  InvitesArgs,
   SendInviteInput,
   ResendInviteInput,
   CancelInviteInput,
@@ -50,7 +50,7 @@ export class InviteResolver {
   }
 
   @Query((_) => InvitesResponse)
-  async invites(@Args() input: InvitationsArgs): Promise<InvitesResponse> {
+  async invites(@Args() input: InvitesArgs): Promise<InvitesResponse> {
     const { skip, take } = input;
     const [items = [], count] = await this.invitesService.findAll(input);
 

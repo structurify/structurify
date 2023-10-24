@@ -17,7 +17,7 @@ import {
   Member,
   Organization,
   MembersResponse,
-  InvitationsArgs,
+  MembersArgs,
   GetMemberInput,
   UpdateMemberInput,
   DeleteMemberInput,
@@ -52,7 +52,7 @@ export class MemberResolver {
   }
 
   @Query((_) => MembersResponse)
-  async members(@Args() input: InvitationsArgs): Promise<MembersResponse> {
+  async members(@Args() input: MembersArgs): Promise<MembersResponse> {
     const { skip, take } = input;
     const [items = [], count] = await this.membersService.findAll(input);
 

@@ -86,6 +86,38 @@ export class MembersService {
     ]);
   }
 
+  async findPrimaryOwner(organizationId: string): Promise<Member | null> {
+    const cachedData = await this.cacheService.get<Member>(
+      `Organization-${organizationId}/PrimaryOwner`,
+    );
+    if (cachedData) {
+      this.logger.debug(
+        `Organization-${organizationId}/PrimaryOwner found in cache`,
+      );
+      return cachedData;
+    }
+
+    const member = await this.prisma.member.findFirst({
+      where: {
+        organizationId,
+        isOwner: true,
+        deletedAt: null,
+      },
+    });
+
+    if (!!member) {
+      await this.cacheService.set(
+        `Organization-${organizationId}/PrimaryOwner`,
+        member,
+      );
+      this.logger.debug(
+        `Organization-${organizationId}/PrimaryOwner stored in cache`,
+      );
+    }
+
+    return member;
+  }
+
   async create(input: CreateMemberDto): Promise<Member> {
     const member = await this.prisma.member.create({
       data: {
