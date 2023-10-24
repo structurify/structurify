@@ -23,6 +23,7 @@ import { PrismaModule } from '@providers/db/prisma/prisma.module';
     PrismaModule,
     EventEmitterModule.forRoot({
       global: true,
+      wildcard: true,
     }),
     ConfigModule.forRoot({
       isGlobal: true,
