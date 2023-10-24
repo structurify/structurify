@@ -78,7 +78,7 @@ enum MemberRole {
 
 model Invite {
   id             String       @id @default(uuid()) @db.Uuid
-  email          String       @db.Uuid
+  email          String
   organizationId String       @db.Uuid
   token          String       @unique
   status         InviteStatus

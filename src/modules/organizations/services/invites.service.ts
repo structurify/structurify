@@ -5,7 +5,7 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { Invite, InviteStatus } from '@prisma/client';
+import { Invite, InviteStatus, Organization } from '@prisma/client';
 import * as dayjs from 'dayjs';
 import { ConfigService } from '@nestjs/config';
 import { generate } from 'generate-password';
@@ -13,8 +13,6 @@ import { I18nService } from 'nestjs-i18n';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
-import { EventsService } from '@modules/events/services';
 import {
   SendInviteDto,
   ResendInviteDto,
@@ -29,8 +27,13 @@ import {
   InviteUpdatedEvent,
   ExpireInviteDto,
 } from '@contracts/organizations';
-import { EventAction } from '@app/contracts/events';
+import { EventAction } from '@contracts/events';
+import { EventsService } from '@modules/events/services';
 import { MailingRepository } from '@modules/communication/repositories';
+import { UsersService } from '@modules/users/services';
+import { PrismaService } from '@providers/db/prisma/services/prisma.service';
+
+import { OrganizationsService } from './organizations.service';
 
 @Injectable()
 export class InvitesService {
@@ -42,6 +45,8 @@ export class InvitesService {
     private readonly eventsService: EventsService,
     private readonly mailingRepository: MailingRepository,
     private readonly configService: ConfigService,
+    private readonly organizationsService: OrganizationsService,
+    private readonly usersService: UsersService,
     private readonly i18n: I18nService,
   ) {}
 
@@ -130,6 +135,13 @@ export class InvitesService {
       dto,
     });
 
+    const organization = await this.organizationsService.findOneById(
+      dto.organizationId,
+    );
+    if (!organization) {
+      throw new NotFoundException(dto.organizationId);
+    }
+
     const token = generate({
       length: 64,
       numbers: true,
@@ -163,14 +175,11 @@ export class InvitesService {
       invite,
     });
 
-    const context = {
-      subject: this.i18n.translate('organizations.emails.invite.send.subject'),
-      body: this.i18n.translate('organizations.emails.invite.send.body', {
-        args: {
-          token,
-        },
-      }),
-    };
+    const context = this.getInviteEmailContext(
+      invite,
+      organization,
+      'Abdizriel',
+    );
 
     this.logger.log('sendInvite - context', {
       context,
@@ -200,9 +209,16 @@ export class InvitesService {
       dto,
     });
 
-    const invitation = await this.findOneById(dto.id);
-    if (!invitation) {
+    const invite = await this.findOneById(dto.id);
+    if (!invite) {
       throw new NotFoundException(dto.id);
+    }
+
+    const organization = await this.organizationsService.findOneById(
+      invite.organizationId,
+    );
+    if (!organization) {
+      throw new NotFoundException(invite.organizationId);
     }
 
     const token = generate({
@@ -241,44 +257,39 @@ export class InvitesService {
       updatedInvitation,
     });
 
-    const context = {
-      subject: this.i18n.translate(
-        'organizations.emails.invite.resend.subject',
-      ),
-      body: this.i18n.translate('organizations.emails.invite.resend.body', {
-        args: {
-          token,
-        },
-      }),
-    };
+    const context = this.getInviteEmailContext(
+      updatedInvitation,
+      organization,
+      'Abdizriel',
+    );
 
     this.logger.log('resendInvite - context', {
       context,
     });
 
     await this.mailingRepository.sendMail({
-      to: invitation.email,
+      to: invite.email,
       subject: context.subject,
-      template: 'emails/organizations/invite-resend',
+      template: 'emails/organizations/invite-send',
       context,
     });
 
     this.eventsService.emitEvent({
       entity: 'Invitation',
-      entityId: `Organization-${invitation.organizationId}/Invitation-${invitation.id}`,
+      entityId: `Organization-${invite.organizationId}/Invitation-${invite.id}`,
       eventName: OrganizationEvents.INVITE_RESENDED,
       event: new InviteResendedEvent(),
       action: EventAction.UPDATE,
-      before: invitation,
+      before: invite,
       after: updatedInvitation,
     });
     this.eventsService.emitEvent({
       entity: 'Invitation',
-      entityId: `Organization-${invitation.organizationId}/Invitation-${invitation.id}`,
+      entityId: `Organization-${invite.organizationId}/Invitation-${invite.id}`,
       eventName: OrganizationEvents.INVITE_UPDATED,
       event: new InviteUpdatedEvent(),
       action: EventAction.UPDATE,
-      before: invitation,
+      before: invite,
       after: updatedInvitation,
     });
 
@@ -452,5 +463,42 @@ export class InvitesService {
     });
 
     return updatedInvitation;
+  }
+
+  private getInviteEmailContext(
+    invite: Invite,
+    organization: Organization,
+    username: string,
+  ): Record<string, string> {
+    const url = `${this.configService.get('WEB_URL')}/dashboard/join?token=${
+      invite.token
+    }&slug=${organization.slug}`;
+
+    const context = {
+      url,
+      subject: this.i18n.translate('organizations.emails.invite.send.subject', {
+        args: {
+          username,
+          organizationName: organization.name,
+        },
+      }),
+      heading: this.i18n.translate('organizations.emails.invite.send.heading', {
+        args: {
+          username,
+          organizationName: organization.name,
+        },
+      }),
+      joinText: this.i18n.translate(
+        'organizations.emails.invite.send.join-text',
+      ),
+      subheading: this.i18n.translate(
+        'organizations.emails.invite.send.subheading',
+      ),
+      description: this.i18n.translate(
+        'organizations.emails.invite.send.description',
+      ),
+    };
+
+    return context;
   }
 }
