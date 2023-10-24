@@ -30,6 +30,7 @@ export class UserListener {
       userId: event.after!.id,
       organizationId: organization.id,
       role: MemberRole.OWNER,
+      isOwner: true,
       createdBy: {
         service: 'organizations-module',
         serviceDetail: 'User created event',

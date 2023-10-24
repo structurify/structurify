@@ -2,7 +2,7 @@
   "emails": {
     "invite": {
       "send": {
-        "subject": "{username} has invited you to join {organizationName}",
+        "subject": "{username} has invited you to join {organizationName}'s Org",
         "heading": "You have been invited to join {organizationName}. {organizationName} is an organization owned by {username}.",
         "join-text": "Join this organization",
         "subheading": "What happens when I join an organization?",
