@@ -6,13 +6,21 @@ import {
   OrganizationsService,
   ProjectsService,
   MembersService,
+  InvitationsService,
 } from './services';
-import { OrganizationResolver, ProjectResolver } from './resolvers';
+import { CommunicationModule } from '@modules/communication/communication.module';
+import { MailingRepository } from '../communication/repositories';
+import {
+  OrganizationResolver,
+  ProjectResolver,
+  InviteResolver,
+  MemberResolver,
+} from './resolvers';
 import { UserListener } from './listeners';
 import { InviteJob } from './jobs';
 
 @Module({
-  imports: [UsersModule],
+  imports: [UsersModule, CommunicationModule],
   providers: [
     OrganizationsService,
     ProjectsService,
@@ -22,7 +30,16 @@ import { InviteJob } from './jobs';
     UserListener,
     InviteJob,
     MembersService,
+    InvitationsService,
+    MailingRepository,
+    InviteResolver,
+    MemberResolver,
   ],
-  exports: [OrganizationsService, ProjectsService, MembersService],
+  exports: [
+    OrganizationsService,
+    ProjectsService,
+    MembersService,
+    InvitationsService,
+  ],
 })
 export class OrganizationsModule {}

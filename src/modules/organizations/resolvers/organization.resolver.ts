@@ -24,15 +24,9 @@ export class OrganizationResolver {
     private readonly membersService: MembersService,
   ) {}
 
-  @Query((_) => Organization)
+  @Query((_) => Organization, { nullable: true })
   async organization(@Args('id') id: string) {
-    const entry = await this.organizationsService.findOneById(id);
-
-    if (!entry) {
-      throw new NotFoundException(id);
-    }
-
-    return entry;
+    return this.organizationsService.findOneById(id);
   }
 
   @Query((_) => OrganizationsResponse)

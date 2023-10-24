@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TYPE "MemberRole" AS ENUM ('OWNER', 'ADMINISTRATOR', 'DEVELOPER');
 
 -- CreateEnum
-CREATE TYPE "InviteStatus" AS ENUM ('SENT', 'ACCEPTED', 'DECLINED', 'EXPIRED');
+CREATE TYPE "InviteStatus" AS ENUM ('PENDING', 'ACCEPTED', 'DECLINED', 'EXPIRED', 'CANCELLED');
 
 -- CreateEnum
 CREATE TYPE "ProjectStatus" AS ENUM ('ACTIVE', 'INACTIVE');
@@ -106,6 +106,9 @@ CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "organizations_slug_key" ON "organizations"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "invites_token_key" ON "invites"("token");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "invites_email_organizationId_key" ON "invites"("email", "organizationId");

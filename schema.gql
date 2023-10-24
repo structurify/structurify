@@ -2,6 +2,15 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
+input AcceptInviteInput {
+  slug: String!
+  token: String!
+}
+
+input CancelInviteInput {
+  id: ID!
+}
+
 input CreateOrganizationInput {
   metadata: JSON
   name: String!
@@ -18,12 +27,27 @@ A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date
 """
 scalar DateTime
 
+input DeleteMemberInput {
+  organizationId: String!
+  userId: String!
+}
+
 input DeleteOrganizationInput {
   id: ID!
 }
 
 input DeleteProjectInput {
   id: ID!
+}
+
+"""
+A field whose value conforms to the standard internet email address format as specified in HTML Spec: https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address.
+"""
+scalar EmailAddress @specifiedBy(url: "https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address")
+
+input GetMemberInput {
+  organizationId: String!
+  userId: String!
 }
 
 """Invite"""
@@ -35,6 +59,7 @@ type Invite {
   email: String!
   expiresAt: DateTime!
   id: ID!
+  organization: Organization!
   organizationId: String!
   role: MemberRole!
   status: InviteStatus!
@@ -45,9 +70,16 @@ type Invite {
 
 enum InviteStatus {
   ACCEPTED
+  CANCELLED
   DECLINED
   EXPIRED
-  SENT
+  PENDING
+}
+
+"""Invites"""
+type InvitesResponse {
+  items: [Invite!]
+  meta: PageMeta
 }
 
 """
@@ -62,10 +94,12 @@ type Member {
   deletedAt: DateTime
   deletedBy: ServiceRole
   id: ID!
+  organization: Organization!
   organizationId: String!
   role: MemberRole!
   updatedAt: DateTime!
   updatedBy: ServiceRole!
+  user: User!
   userId: String!
 }
 
@@ -75,7 +109,19 @@ enum MemberRole {
   OWNER
 }
 
+"""Members"""
+type MembersResponse {
+  items: [Member!]
+  meta: PageMeta
+}
+
 type Mutation {
+  inviteAccept(input: AcceptInviteInput!): Invite!
+  inviteCancel(input: CancelInviteInput!): Invite!
+  inviteResend(input: ResendInviteInput!): Invite!
+  inviteSend(input: SendInviteInput!): Invite!
+  memberDelete(input: DeleteMemberInput!): Member!
+  memberUpdate(input: UpdateMemberInput!): Member!
   organizationCreate(input: CreateOrganizationInput!): Organization!
   organizationDelete(input: DeleteOrganizationInput!): Organization!
   organizationUpdate(input: UpdateOrganizationInput!): Organization!
@@ -140,10 +186,25 @@ type ProjectsResponse {
 }
 
 type Query {
-  organization(id: String!): Organization!
+  invite(id: String!): Invite
+  invites(organizationId: ID!, skip: Int! = 0, take: Int! = 10): InvitesResponse!
+  member(input: GetMemberInput!): Member
+  members(organizationId: ID!, skip: Int! = 0, take: Int! = 10): MembersResponse!
+  organization(id: String!): Organization
   organizations(skip: Int! = 0, take: Int! = 10): OrganizationsResponse!
-  project(id: String!): Project!
+  project(id: String!): Project
   projects(organizationId: ID!, skip: Int! = 0, take: Int! = 10): ProjectsResponse!
+}
+
+input ResendInviteInput {
+  id: ID!
+}
+
+input SendInviteInput {
+  email: EmailAddress!
+  metadata: JSON
+  organizationId: String!
+  role: MemberRole!
 }
 
 """Service role"""
@@ -179,6 +240,12 @@ input TransferProjectInput {
   newOrganizationId: String!
 }
 
+input UpdateMemberInput {
+  organizationId: String!
+  role: MemberRole
+  userId: String!
+}
+
 input UpdateOrganizationInput {
   id: ID!
   metadata: JSON
@@ -190,4 +257,19 @@ input UpdateProjectInput {
   metadata: JSON
   name: String
   status: ProjectStatus
+}
+
+"""User"""
+type User {
+  createdAt: DateTime!
+  createdBy: ServiceRole!
+  deletedAt: DateTime
+  deletedBy: ServiceRole
+  email: String!
+  firstName: String
+  id: ID!
+  lastName: String
+  updatedAt: DateTime!
+  updatedBy: ServiceRole!
+  username: String!
 }

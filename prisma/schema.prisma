@@ -80,7 +80,7 @@ model Invite {
   id             String       @id @default(uuid()) @db.Uuid
   email          String       @db.Uuid
   organizationId String       @db.Uuid
-  token          String
+  token          String       @unique
   status         InviteStatus
   role           MemberRole
   expiresAt      DateTime
@@ -99,10 +99,11 @@ model Invite {
 }
 
 enum InviteStatus {
-  SENT
+  PENDING
   ACCEPTED
   DECLINED
   EXPIRED
+  CANCELLED
 }
 
 model Project {

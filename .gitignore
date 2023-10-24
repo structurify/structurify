@@ -41,3 +41,6 @@ lerna-debug.log*
 .env.production
 
 .yarn/cache/*
+
+# Infra
+infra/postgresql

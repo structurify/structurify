@@ -64,6 +64,7 @@
     "bcrypt": "^5.1.1",
     "cache-manager": "^5.2.4",
     "csv-parser": "^3.0.0",
+    "dayjs": "^1.11.10",
     "generate-password": "^1.7.0",
     "graphql": "^16.8.1",
     "graphql-query-complexity": "^0.12.0",

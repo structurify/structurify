@@ -49,15 +49,9 @@ export class ProjectResolver {
     return this.organizationsService.findOneById(root.organizationId);
   }
 
-  @Query((_) => Project)
+  @Query((_) => Project, { nullable: true })
   async project(@Args('id') id: string) {
-    const entry = await this.projectsService.findOneById(id);
-
-    if (!entry) {
-      throw new NotFoundException(id);
-    }
-
-    return entry;
+    return this.projectsService.findOneById(id);
   }
 
   @Query((_) => ProjectsResponse)
