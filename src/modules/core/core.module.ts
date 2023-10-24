@@ -13,7 +13,8 @@ import {
   HeaderResolver,
 } from 'nestjs-i18n';
 import { join } from 'path';
-import { MinioModule, MinioService } from 'nestjs-minio-client';
+import { MinioModule } from 'nestjs-minio-client';
+import { MeiliSearchModule } from 'nestjs-meilisearch';
 
 // Providers
 import { PrismaModule } from '@providers/db/prisma/prisma.module';
@@ -78,8 +79,16 @@ import { PrismaModule } from '@providers/db/prisma/prisma.module';
         isGlobal: true,
       }),
     }),
+    MeiliSearchModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: async (configService: ConfigService) => ({
+        host: configService.getOrThrow('MEILISEARCH_HOST'),
+        apiKey: configService.getOrThrow('MEILISEARCH_API_KEY'),
+      }),
+    }),
   ],
   providers: [],
-  exports: [CacheModule, MinioModule],
+  exports: [CacheModule, MinioModule, MeiliSearchModule],
 })
 export class CoreModule {}

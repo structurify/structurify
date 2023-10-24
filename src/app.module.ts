@@ -15,6 +15,7 @@ import { OrganizationsModule } from '@modules/organizations/organizations.module
 import { CommunicationModule } from '@modules/communication/communication.module';
 import { CoreModule } from '@modules/core/core.module';
 import { DataLakeModule } from '@modules/data-lake/data-lake.module';
+import { SearchModule } from '@modules/search/search.module';
 
 const modules: Array<
   Type | DynamicModule | Promise<DynamicModule> | ForwardReference
@@ -27,6 +28,7 @@ const modules: Array<
   EventsModule,
   CommunicationModule,
   DataLakeModule,
+  SearchModule,
 ];
 
 const controllers: any[] = [];

@@ -44,3 +44,4 @@ lerna-debug.log*
 
 # Infra
 infra/postgresql
+infra/meilisearch/data.ms
