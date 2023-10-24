@@ -15,6 +15,7 @@ import {
 import { join } from 'path';
 import { MinioModule } from 'nestjs-minio-client';
 import { MeiliSearchModule } from 'nestjs-meilisearch';
+import { DateScalar } from '@app/shared/scalars/date.scalar';
 
 // Providers
 import { PrismaModule } from '@providers/db/prisma/prisma.module';
@@ -88,7 +89,7 @@ import { PrismaModule } from '@providers/db/prisma/prisma.module';
       }),
     }),
   ],
-  providers: [],
+  providers: [DateScalar],
   exports: [
     CacheModule,
     MinioModule,
