@@ -124,7 +124,7 @@
     "jest-ts-auto-mock": "^2.1.0",
     "k6": "^0.0.0",
     "prettier": "^3.0.0",
-    "prisma": "^5.4.2",
+    "prisma": "^5.5.2",
     "prisma-nestjs-graphql": "^19.2.0",
     "source-map-support": "^0.5.21",
     "supertest": "^6.3.3",
