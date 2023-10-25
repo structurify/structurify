@@ -41,7 +41,7 @@
     "@nestjs/jwt": "^10.1.1",
     "@nestjs/passport": "^10.0.2",
     "@nestjs/platform-express": "^10.0.0",
-    "@nestjs/schedule": "^3.0.4",
+    "@nestjs/schedule": "^4.0.0",
     "@nestjs/terminus": "^10.1.1",
     "@opentelemetry/api": "^1.6.0",
     "@opentelemetry/auto-instrumentations-node": "^0.39.4",
