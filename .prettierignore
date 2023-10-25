@@ -1,0 +1,22 @@
+# Compiled & generated output
+dist
+infra
+coverage
+schema.gql
+README.md
+
+# Cache
+/.cache
+
+# Yarn
+/.yarn
+/.pnp.*
+
+# Terraform
+.terraform
+*.tfvars.json
+
+# Misc
+/.husky
+*.hbs
+*.ejs
