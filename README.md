@@ -29,10 +29,12 @@
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Description](#description)
 - [ALPHA Roadmap](#alpha-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
+    - [Crafted with ❤️ by Marcin Mrotek](#crafted-with-️-by-marcin-mrotek)
 
 ## Description
 
@@ -59,8 +61,8 @@ Structurify is an open-source devtool platform that serves a starter of your fut
   - [ ] webhooks
   - [ ] api keys
 - [ ] Tests
-- [ ] Unit
-- [ ] Integration
+  - [ ] Unit
+  - [ ] Integration
 
 ## Contributing
 
