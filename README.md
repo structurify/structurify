@@ -29,9 +29,9 @@
 
 ## Table of Contents
 
-- [Table of Contents](#table-of-contents)
 - [Description](#description)
 - [ALPHA Roadmap](#alpha-roadmap)
+- [BETA Roadmap](#beta-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
     - [Crafted with ❤️ by Marcin Mrotek](#crafted-with-️-by-marcin-mrotek)
@@ -44,7 +44,6 @@ Structurify is an open-source devtool platform that serves a starter of your fut
 
 - [x] Data Lake - Bronze tier
 - [x] Search Engine
-- [ ] DLQ
 - [x] Mailing
 - [ ] i18n
   - [ ] Errors
@@ -62,6 +61,11 @@ Structurify is an open-source devtool platform that serves a starter of your fut
   - [ ] api keys
 - [ ] Tests
   - [ ] Unit
+
+## BETA Roadmap
+
+- [ ] DLQ
+- [ ] Tests
   - [ ] Integration
 
 ## Contributing

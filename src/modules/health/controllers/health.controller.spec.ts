@@ -7,6 +7,8 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { createMock } from 'ts-auto-mock';
 
+import { PrismaService } from '@providers/db/prisma/services/prisma.service';
+
 import { HealthController } from './health.controller';
 
 describe('HealthController', () => {
@@ -15,6 +17,7 @@ describe('HealthController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [HealthController],
+      providers: [{ provide: PrismaService, useValue: {} }],
     })
       .useMocker((token) => {
         const getStatus = (key: string) => ({ [key]: { status: 'up' } });
@@ -53,14 +56,14 @@ describe('HealthController', () => {
 
   it('should check health', async () => {
     await expect(controller.check()).resolves.toMatchInlineSnapshot(`
-      Array [
-        Object {
-          "prisma": Object {
+      [
+        {
+          "prisma": {
             "status": "up",
           },
         },
-        Object {
-          "mem_rss": Object {
+        {
+          "mem_rss": {
             "status": "up",
           },
         },

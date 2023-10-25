@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+
+import { SearchService } from '../services';
 import { EventListener } from './event.listener';
 
 describe('EventListener', () => {
@@ -6,7 +8,7 @@ describe('EventListener', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [EventListener],
+      providers: [EventListener, { provide: SearchService, useValue: {} }],
     }).compile();
 
     service = module.get<EventListener>(EventListener);

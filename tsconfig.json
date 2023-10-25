@@ -26,6 +26,12 @@
       "@providers/*": ["./src/shared/providers/*"],
       "@contracts/*": ["./src/contracts/*"],
       "@decorators/*": ["./src/shared/decorators/*"]
-    }
+    },
+    "plugins": [
+      {
+        "transform": "ts-auto-mock/transformer",
+        "cacheBetweenTests": false
+      }
+    ]
   }
 }
