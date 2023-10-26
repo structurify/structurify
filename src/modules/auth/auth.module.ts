@@ -4,9 +4,9 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { UsersModule } from '@modules/users/users.module';
-import { AuthService } from './services';
+import { AuthService, TokensService } from './services';
 import { AuthResolver } from './resolvers';
-import { JwtStrategy, LocalStrategy } from './strategies';
+import { JwtStrategy, JwtRefreshStrategy, LocalStrategy } from './strategies';
 
 @Module({
   imports: [
@@ -17,11 +17,18 @@ import { JwtStrategy, LocalStrategy } from './strategies';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         global: true,
-        secret: configService.get('JWT_SECRET'),
-        signOptions: { expiresIn: '24h' },
+        secret: configService.get('JWT_ACCESS_TOKEN_SECRET'),
+        signOptions: { expiresIn: '15m' },
       }),
     }),
   ],
-  providers: [AuthService, AuthResolver, LocalStrategy, JwtStrategy],
+  providers: [
+    AuthService,
+    TokensService,
+    AuthResolver,
+    LocalStrategy,
+    JwtStrategy,
+    JwtRefreshStrategy,
+  ],
 })
 export class AuthModule {}

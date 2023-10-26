@@ -126,6 +126,7 @@ type Mutation {
   projectDelete(input: DeleteProjectInput!): Project!
   projectTransfer(input: TransferProjectInput!): Project!
   projectUpdate(input: UpdateProjectInput!): Project!
+  refreshToken: SignInResponse!
   signIn(input: SignInInput!): SignInResponse!
   signUp(input: SignUpInput!): SignUpResponse!
 }
@@ -219,6 +220,7 @@ input SignInInput {
 """Sign in response"""
 type SignInResponse {
   accessToken: String!
+  refreshToken: String!
 }
 
 input SignUpInput {
@@ -230,6 +232,7 @@ input SignUpInput {
 """Sign up response"""
 type SignUpResponse {
   accessToken: String!
+  refreshToken: String!
 }
 
 input TransferProjectInput {

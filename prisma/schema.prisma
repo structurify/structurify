@@ -28,8 +28,26 @@ model User {
   metadata  Json?
 
   membership Member[]
+  tokens     Token[]
 
   @@map("users")
+}
+
+model Token {
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  refreshToken String
+  expiresAt    DateTime
+  createdAt    DateTime  @default(now())
+  createdBy    Json
+  updatedAt    DateTime  @updatedAt
+  updatedBy    Json
+  deletedAt    DateTime?
+  deletedBy    Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tokens")
 }
 
 model Organization {

@@ -1,33 +1,25 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { JwtService } from '@nestjs/jwt';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { ConfigService } from '@nestjs/config';
 
 import { PrismaService } from '@providers/db/prisma/services/prisma.service';
 import { EventsService } from '@modules/events/services';
-import { UsersService } from '@modules/users/services';
 
-import { AuthService } from './auth.service';
 import { TokensService } from './tokens.service';
 
-describe('AuthService', () => {
-  let service: AuthService;
+describe('TokensService', () => {
+  let service: TokensService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        AuthService,
-        { provide: UsersService, useValue: {} },
-        { provide: JwtService, useValue: {} },
+        TokensService,
         { provide: CACHE_MANAGER, useValue: {} },
         { provide: PrismaService, useValue: {} },
         { provide: EventsService, useValue: {} },
-        { provide: TokensService, useValue: {} },
-        { provide: ConfigService, useValue: {} },
       ],
     }).compile();
 
-    service = module.get<AuthService>(AuthService);
+    service = module.get<TokensService>(TokensService);
   });
 
   it('should be defined', () => {

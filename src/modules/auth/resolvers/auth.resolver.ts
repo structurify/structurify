@@ -8,7 +8,7 @@ import {
 import { Logger, UseGuards } from '@nestjs/common';
 
 import { AuthService } from '../services';
-import { GqlAuthGuard } from '../guards';
+import { GqlAuthGuard, JwtRefreshGuard } from '../guards';
 
 @Resolver()
 export class AuthResolver {
@@ -23,6 +23,15 @@ export class AuthResolver {
     @Context() context,
   ): Promise<SignInResponse> {
     return this.authService.signIn(context.user);
+  }
+
+  @UseGuards(JwtRefreshGuard)
+  @Mutation((_) => SignInResponse)
+  async refreshToken(@Context() context): Promise<SignInResponse> {
+    return this.authService.refreshToken(
+      context.req.user,
+      context.req.user.token,
+    );
   }
 
   @Mutation((_) => SignUpResponse)

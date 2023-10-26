@@ -4,4 +4,7 @@ import { Field, ObjectType } from '@nestjs/graphql';
 export class SignUpResponse {
   @Field((_) => String)
   public accessToken: string;
+
+  @Field((_) => String)
+  public refreshToken: string;
 }
