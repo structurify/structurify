@@ -19,8 +19,12 @@ import { JwtStrategy, JwtRefreshStrategy, LocalStrategy } from './strategies';
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => ({
         global: true,
-        secret: configService.get('JWT_ACCESS_TOKEN_SECRET'),
-        signOptions: { expiresIn: '15m' },
+        secret: configService.get<string>('JWT_ACCESS_TOKEN_SECRET'),
+        signOptions: {
+          expiresIn: configService.get<string>(
+            'JWT_ACCESS_TOKEN_EXPIRATION_TIME',
+          ),
+        },
       }),
     }),
   ],
