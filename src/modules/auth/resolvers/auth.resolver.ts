@@ -4,6 +4,9 @@ import {
   AuthResponse,
   SignUpInput,
   SignOutResponse,
+  ForgotPasswordInput,
+  ForgotPasswordResponse,
+  ResetPasswordInput,
 } from '@contracts/auth';
 import { Logger, UseGuards } from '@nestjs/common';
 import { User } from '@prisma/client';
@@ -31,6 +34,30 @@ export class AuthResolver {
   @Mutation((_) => AuthResponse)
   async refreshToken(@CurrentUser() user: User): Promise<AuthResponse> {
     return this.authService.refreshToken(user, (user as any).token);
+  }
+
+  @Mutation((_) => ForgotPasswordResponse)
+  async forgotPassword(
+    @Args('input') input: ForgotPasswordInput,
+  ): Promise<ForgotPasswordResponse> {
+    try {
+      await this.authService.forgotPassword(input.email);
+      return {
+        success: true,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return {
+        success: false,
+      };
+    }
+  }
+
+  @Mutation((_) => AuthResponse)
+  async resetPassword(
+    @Args('input') input: ResetPasswordInput,
+  ): Promise<AuthResponse> {
+    return this.authService.resetPassword(input);
   }
 
   @UseGuards(JwtAuthGuard)

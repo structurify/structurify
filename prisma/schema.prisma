@@ -13,19 +13,21 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(uuid()) @db.Uuid
-  firstName String?
-  lastName  String?
-  username  String    @unique
-  email     String    @unique
-  password  String
-  createdAt DateTime  @default(now())
-  createdBy Json
-  updatedAt DateTime  @updatedAt
-  updatedBy Json
-  deletedAt DateTime?
-  deletedBy Json?
-  metadata  Json?
+  id                  String    @id @default(uuid()) @db.Uuid
+  firstName           String?
+  lastName            String?
+  username            String    @unique
+  email               String    @unique
+  password            String
+  resetToken          String?
+  resetTokenExpiresAt DateTime?
+  createdAt           DateTime  @default(now())
+  createdBy           Json
+  updatedAt           DateTime  @updatedAt
+  updatedBy           Json
+  deletedAt           DateTime?
+  deletedBy           Json?
+  metadata            Json?
 
   membership Member[]
   tokens     Token[]

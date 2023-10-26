@@ -2,10 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ConfigService } from '@nestjs/config';
+import { I18nService } from 'nestjs-i18n';
 
 import { PrismaService } from '@providers/db/prisma/services/prisma.service';
 import { EventsService } from '@modules/events/services';
 import { UsersService } from '@modules/users/services';
+import { MailingRepository } from '@modules/communication/repositories';
 
 import { AuthService } from './auth.service';
 import { TokensService } from './tokens.service';
@@ -24,6 +26,8 @@ describe('AuthService', () => {
         { provide: EventsService, useValue: {} },
         { provide: TokensService, useValue: {} },
         { provide: ConfigService, useValue: {} },
+        { provide: I18nService, useValue: {} },
+        { provide: MailingRepository, useValue: {} },
       ],
     }).compile();
 

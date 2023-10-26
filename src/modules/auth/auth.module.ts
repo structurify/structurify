@@ -4,6 +4,7 @@ import { PassportModule } from '@nestjs/passport';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import { UsersModule } from '@modules/users/users.module';
+import { CommunicationModule } from '@modules/communication/communication.module';
 import { AuthService, TokensService } from './services';
 import { AuthResolver } from './resolvers';
 import { JwtStrategy, JwtRefreshStrategy, LocalStrategy } from './strategies';
@@ -12,6 +13,7 @@ import { JwtStrategy, JwtRefreshStrategy, LocalStrategy } from './strategies';
   imports: [
     UsersModule,
     PassportModule,
+    CommunicationModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

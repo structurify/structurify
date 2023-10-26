@@ -218,6 +218,8 @@ export class UsersService {
       },
       data: {
         password: hashedPassword,
+        resetToken: null,
+        resetTokenExpiresAt: null,
         updatedBy: dto.updatedBy,
       },
     });

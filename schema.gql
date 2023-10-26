@@ -49,6 +49,15 @@ A field whose value conforms to the standard internet email address format as sp
 """
 scalar EmailAddress @specifiedBy(url: "https://html.spec.whatwg.org/multipage/input.html#valid-e-mail-address")
 
+input ForgotPasswordInput {
+  email: String!
+}
+
+"""Forgot password response"""
+type ForgotPasswordResponse {
+  success: Boolean!
+}
+
 input GetMemberInput {
   organizationId: String!
   userId: String!
@@ -120,6 +129,7 @@ type MembersResponse {
 }
 
 type Mutation {
+  forgotPassword(input: ForgotPasswordInput!): ForgotPasswordResponse!
   inviteAccept(input: AcceptInviteInput!): Invite!
   inviteCancel(input: CancelInviteInput!): Invite!
   inviteResend(input: ResendInviteInput!): Invite!
@@ -134,6 +144,7 @@ type Mutation {
   projectTransfer(input: TransferProjectInput!): Project!
   projectUpdate(input: UpdateProjectInput!): Project!
   refreshToken: AuthResponse!
+  resetPassword(input: ResetPasswordInput!): AuthResponse!
   signIn(input: SignInInput!): AuthResponse!
   signOut: SignOutResponse!
   signUp(input: SignUpInput!): AuthResponse!
@@ -206,6 +217,13 @@ type Query {
 
 input ResendInviteInput {
   id: ID!
+}
+
+input ResetPasswordInput {
+  confirmPassword: String!
+  newPassword: String!
+  token: String!
+  userId: String!
 }
 
 input SendInviteInput {

@@ -17,7 +17,7 @@ export class UpdatePasswordDto {
   @IsString()
   @MinLength(16)
   @IsOptional()
-  public currentPassword: string;
+  public currentPassword?: string;
 
   @IsString()
   @MinLength(16)

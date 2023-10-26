@@ -1,7 +1,7 @@
 import { ServiceRoleInput } from '@contracts/common';
 import { Prisma } from '@prisma/client';
 import { Type } from 'class-transformer';
-import { IsOptional, IsNotEmpty, IsString } from 'class-validator';
+import { IsOptional, IsNotEmpty, IsString, IsDate } from 'class-validator';
 
 export class UpdateUserDto {
   @IsString()
@@ -15,6 +15,14 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   public lastName?: string | null;
+
+  @IsString()
+  @IsOptional()
+  public resetToken?: string | null;
+
+  @IsDate()
+  @IsOptional()
+  public resetTokenExpiresAt?: Date | null;
 
   @IsNotEmpty()
   @Type(() => ServiceRoleInput)
