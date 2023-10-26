@@ -1,4 +1,9 @@
-import { Injectable, Inject, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  Inject,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { NotFoundException } from '@nestjs/common';
@@ -16,6 +21,7 @@ import {
   UserUpdatedEvent,
   UserDeletedEvent,
   UserEvents,
+  UpdatePasswordDto,
 } from '@contracts/users';
 import { EventAction } from '@contracts/events';
 
@@ -158,6 +164,55 @@ export class UsersService {
       },
       data: {
         ...rest,
+      },
+    });
+
+    await this.cacheService.set(`User-${updatedUser.id}/ID`, updatedUser);
+    this.logger.debug(`User-${updatedUser.id}/ID updated in cache`);
+
+    this.eventsService.emitEvent({
+      entity: 'User',
+      entityId: `User-${user.id}`,
+      eventName: UserEvents.USER_UPDATED,
+      event: new UserUpdatedEvent(),
+      action: EventAction.UPDATE,
+      before: user,
+      after: updatedUser,
+    });
+
+    return updatedUser;
+  }
+
+  async updatePassword(dto: UpdatePasswordDto): Promise<User> {
+    const { confirmPassword, newPassword, currentPassword, userId } = dto;
+
+    const user = await this.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException(userId);
+    }
+
+    if (!!currentPassword) {
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        throw new BadRequestException('Current password is incorrect');
+      }
+    }
+
+    if (newPassword !== confirmPassword) {
+      throw new BadRequestException('Passwords do not match');
+    }
+
+    const salt = await bcrypt.genSalt();
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    const updatedUser = await this.prisma.user.update({
+      where: {
+        id: user.id,
+        deletedAt: null,
+      },
+      data: {
+        password: hashedPassword,
+        updatedBy: dto.updatedBy,
       },
     });
 

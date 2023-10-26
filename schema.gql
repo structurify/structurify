@@ -137,6 +137,7 @@ type Mutation {
   signIn(input: SignInInput!): AuthResponse!
   signOut: SignOutResponse!
   signUp(input: SignUpInput!): AuthResponse!
+  updatePassword(input: UpdatePasswordInput!): User!
 }
 
 """Organization"""
@@ -252,6 +253,12 @@ input UpdateOrganizationInput {
   id: ID!
   metadata: JSON
   name: String
+}
+
+input UpdatePasswordInput {
+  confirmPassword: String!
+  currentPassword: String!
+  newPassword: String!
 }
 
 input UpdateProjectInput {
