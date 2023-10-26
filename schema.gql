@@ -6,6 +6,13 @@ input AcceptInviteInput {
   token: String!
 }
 
+"""Auth response"""
+type AuthResponse {
+  accessToken: String!
+  refreshToken: String!
+  refreshTokenId: String!
+}
+
 input CancelInviteInput {
   id: ID!
 }
@@ -126,9 +133,9 @@ type Mutation {
   projectDelete(input: DeleteProjectInput!): Project!
   projectTransfer(input: TransferProjectInput!): Project!
   projectUpdate(input: UpdateProjectInput!): Project!
-  refreshToken: SignInResponse!
-  signIn(input: SignInInput!): SignInResponse!
-  signUp(input: SignUpInput!): SignUpResponse!
+  refreshToken: AuthResponse!
+  signIn(input: SignInInput!): AuthResponse!
+  signUp(input: SignUpInput!): AuthResponse!
 }
 
 """Organization"""
@@ -217,24 +224,10 @@ input SignInInput {
   username: String!
 }
 
-"""Sign in response"""
-type SignInResponse {
-  accessToken: String!
-  refreshToken: String!
-  refreshTokenId: String!
-}
-
 input SignUpInput {
   email: String!
   password: String!
   username: String!
-}
-
-"""Sign up response"""
-type SignUpResponse {
-  accessToken: String!
-  refreshToken: String!
-  refreshTokenId: String!
 }
 
 input TransferProjectInput {
