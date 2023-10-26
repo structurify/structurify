@@ -101,6 +101,15 @@ export class AuthService {
     return this.getTokens(user, token);
   }
 
+  async signOut(user: User): Promise<void> {
+    await this.tokensService.deleteForUser({
+      userId: user.id,
+      deletedBy: {
+        user: user.id,
+      },
+    });
+  }
+
   private async getTokens(user: User, token?: Token) {
     const refreshExpire = this.configService.get<string>(
       'JWT_REFRESH_TOKEN_EXPIRATION_TIME',

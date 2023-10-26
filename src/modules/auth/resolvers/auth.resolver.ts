@@ -34,8 +34,6 @@ export class AuthResolver {
     await this.authService.signOut(user);
   }
 
-  @Mutation((_) => SignUpResponse)
-  async signUp(@Args('input') input: SignUpInput): Promise<SignUpResponse> {
   @Mutation((_) => AuthResponse)
   async signUp(@Args('input') input: SignUpInput): Promise<AuthResponse> {
     return this.authService.signUp(input.email, input.password, input.username);
