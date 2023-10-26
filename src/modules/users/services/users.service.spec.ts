@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { I18nService } from 'nestjs-i18n';
 
 import { PrismaService } from '@providers/db/prisma/services/prisma.service';
 import { EventsService } from '@modules/events/services';
@@ -16,6 +17,7 @@ describe('UsersService', () => {
         { provide: CACHE_MANAGER, useValue: {} },
         { provide: PrismaService, useValue: {} },
         { provide: EventsService, useValue: {} },
+        { provide: I18nService, useValue: {} },
       ],
     }).compile();
 

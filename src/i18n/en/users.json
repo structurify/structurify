@@ -4,5 +4,9 @@
       "subject": "Welcome to the site!",
       "body": "Hi {username}, Welcome to the site!"
     }
+  },
+  "errors": {
+    "invalid-password": "Invalid password",
+    "password-mismatch": "Passwords do not match"
   }
 }

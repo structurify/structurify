@@ -24,6 +24,7 @@ import {
   UpdatePasswordDto,
 } from '@contracts/users';
 import { EventAction } from '@contracts/events';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class UsersService {
@@ -33,6 +34,7 @@ export class UsersService {
     @Inject(CACHE_MANAGER) private cacheService: Cache,
     private readonly prisma: PrismaService,
     private readonly eventsService: EventsService,
+    private readonly i18nService: I18nService,
   ) {}
 
   async findOneById(id: string): Promise<User | null> {
@@ -194,12 +196,16 @@ export class UsersService {
     if (!!currentPassword) {
       const isMatch = await bcrypt.compare(currentPassword, user.password);
       if (!isMatch) {
-        throw new BadRequestException('Current password is incorrect');
+        throw new BadRequestException(
+          this.i18nService.translate('users.errors.invalid-password'),
+        );
       }
     }
 
     if (newPassword !== confirmPassword) {
-      throw new BadRequestException('Passwords do not match');
+      throw new BadRequestException(
+        this.i18nService.translate('users.errors.password-mismatch'),
+      );
     }
 
     const salt = await bcrypt.genSalt();
