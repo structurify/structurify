@@ -124,7 +124,6 @@ type Mutation {
   inviteCancel(input: CancelInviteInput!): Invite!
   inviteResend(input: ResendInviteInput!): Invite!
   inviteSend(input: SendInviteInput!): Invite!
-  me: User!
   memberDelete(input: DeleteMemberInput!): Member!
   memberUpdate(input: UpdateMemberInput!): Member!
   organizationCreate(input: CreateOrganizationInput!): Organization!
@@ -195,6 +194,7 @@ type ProjectsResponse {
 type Query {
   invite(id: String!): Invite
   invites(organizationId: ID!, skip: Int! = 0, take: Int! = 10): InvitesResponse!
+  me: User!
   member(input: GetMemberInput!): Member
   members(organizationId: ID!, skip: Int! = 0, take: Int! = 10): MembersResponse!
   organization(id: String!): Organization
