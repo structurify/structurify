@@ -34,7 +34,6 @@
 - [BETA Roadmap](#beta-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
-    - [Crafted with ❤️ by Marcin Mrotek](#crafted-with-️-by-marcin-mrotek)
 
 ## Description
 
@@ -52,7 +51,7 @@ Structurify is an open-source devtool platform that serves a starter of your fut
 - [x] Event Emitter
 - [ ] Permissions
 - [ ] GraphQL API
-  - [ ] auth
+  - [x] auth
   - [x] organization
   - [x] project
   - [x] invite
