@@ -124,6 +124,7 @@ type Mutation {
   inviteCancel(input: CancelInviteInput!): Invite!
   inviteResend(input: ResendInviteInput!): Invite!
   inviteSend(input: SendInviteInput!): Invite!
+  me: User!
   memberDelete(input: DeleteMemberInput!): Member!
   memberUpdate(input: UpdateMemberInput!): Member!
   organizationCreate(input: CreateOrganizationInput!): Organization!
@@ -135,6 +136,7 @@ type Mutation {
   projectUpdate(input: UpdateProjectInput!): Project!
   refreshToken: AuthResponse!
   signIn(input: SignInInput!): AuthResponse!
+  signOut: SignOutResponse!
   signUp(input: SignUpInput!): AuthResponse!
 }
 
@@ -222,6 +224,11 @@ type ServiceRole {
 input SignInInput {
   password: String!
   username: String!
+}
+
+"""Sign out response"""
+type SignOutResponse {
+  success: Boolean!
 }
 
 input SignUpInput {

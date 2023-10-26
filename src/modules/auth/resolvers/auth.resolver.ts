@@ -1,11 +1,16 @@
 import { Args, Mutation, Resolver, Context } from '@nestjs/graphql';
-import { SignInInput, AuthResponse, SignUpInput } from '@contracts/auth';
+import {
+  SignInInput,
+  AuthResponse,
+  SignUpInput,
+  SignOutResponse,
+} from '@contracts/auth';
 import { Logger, UseGuards } from '@nestjs/common';
+import { User } from '@prisma/client';
+import { CurrentUser } from '@decorators/current-user.decorator';
 
 import { AuthService } from '../services';
 import { GqlAuthGuard, JwtRefreshGuard, JwtAuthGuard } from '../guards';
-import { User } from '@prisma/client';
-import { CurrentUser } from '@decorators/current-user.decorator';
 
 @Resolver()
 export class AuthResolver {
@@ -29,9 +34,19 @@ export class AuthResolver {
   }
 
   @UseGuards(JwtAuthGuard)
-  @Mutation()
-  async signOut(@CurrentUser() user: User): Promise<void> {
-    await this.authService.signOut(user);
+  @Mutation(() => SignOutResponse)
+  async signOut(@CurrentUser() user: User): Promise<SignOutResponse> {
+    try {
+      await this.authService.signOut(user);
+      return {
+        success: true,
+      };
+    } catch (error) {
+      this.logger.error(error);
+      return {
+        success: false,
+      };
+    }
   }
 
   @Mutation((_) => AuthResponse)
