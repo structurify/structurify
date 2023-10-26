@@ -31,13 +31,16 @@ export class JwtRefreshStrategy extends PassportStrategy(
       .header('Authorization')
       .replace('Bearer', '')
       .trim();
+    // @ts-ignore
+    const tokenId = request.header('X-RefreshToken-Id').trim();
 
-    if (!refreshToken) {
+    if (!refreshToken || !tokenId) {
       throw new UnauthorizedException();
     }
 
     const res = await this.authService.validateRefreshToken(
       refreshToken,
+      tokenId,
       payload,
     );
 

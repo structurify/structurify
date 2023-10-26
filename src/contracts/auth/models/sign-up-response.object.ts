@@ -7,4 +7,7 @@ export class SignUpResponse {
 
   @Field((_) => String)
   public refreshToken: string;
+
+  @Field((_) => String)
+  public refreshTokenId: string;
 }

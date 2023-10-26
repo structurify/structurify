@@ -51,9 +51,18 @@ export class AuthService {
     return this.getTokens(user);
   }
 
-  async validateRefreshToken(refreshToken: string, payload: any) {
-    const foundToken = await this.tokensService.findOneByToken(refreshToken);
+  async validateRefreshToken(
+    refreshToken: string,
+    tokenId: string,
+    payload: any,
+  ) {
+    const foundToken = await this.tokensService.findOneById(tokenId);
     if (!foundToken) {
+      throw new UnauthorizedException();
+    }
+
+    const isMatch = await bcrypt.compare(refreshToken, foundToken.refreshToken);
+    if (!isMatch) {
       throw new UnauthorizedException();
     }
 
@@ -122,25 +131,29 @@ export class AuthService {
       ),
     ]);
 
+    const hash = await bcrypt.hash(refreshToken, 10);
+
     const num = refreshExpire!.match(/\d+/g);
     const letr = refreshExpire!.match(/[a-zA-Z]+/g);
     const expiresAt = dayjs()
       .add(Number(num![0]), letr![0] as any)
       .toDate();
 
+    let currentToken = token;
+
     if (!!token) {
-      await this.tokensService.update({
+      currentToken = await this.tokensService.update({
         id: token.id,
-        refreshToken,
+        refreshToken: hash,
         expiresAt,
         updatedBy: {
           user: user.id,
         },
       });
     } else {
-      await this.tokensService.create({
+      currentToken = await this.tokensService.create({
         userId: user.id,
-        refreshToken,
+        refreshToken: hash,
         expiresAt,
         createdBy: {
           user: user.id,
@@ -151,6 +164,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
+      refreshTokenId: currentToken.id,
     };
   }
 }

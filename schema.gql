@@ -221,6 +221,7 @@ input SignInInput {
 type SignInResponse {
   accessToken: String!
   refreshToken: String!
+  refreshTokenId: String!
 }
 
 input SignUpInput {
@@ -233,6 +234,7 @@ input SignUpInput {
 type SignUpResponse {
   accessToken: String!
   refreshToken: String!
+  refreshTokenId: String!
 }
 
 input TransferProjectInput {
