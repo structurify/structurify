@@ -2957,6 +2957,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@prisma/extension-read-replicas@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "@prisma/extension-read-replicas@npm:0.3.0"
+  peerDependencies:
+    "@prisma/client": ^5.2.0
+  checksum: 7698422a06c795254b156f7ae2b1c6167b0685df2f04feabd78fe8260d4d2df2442314da2d23135271c89ffe22e1b63f94781673d606e9472d43106ce2a3444f
+  languageName: node
+  linkType: hard
+
 "@prisma/generator-helper@npm:^5.3.1":
   version: 5.4.2
   resolution: "@prisma/generator-helper@npm:5.4.2"
@@ -3158,6 +3167,7 @@ __metadata:
     "@opentelemetry/sdk-trace-node": ^1.17.1
     "@opentelemetry/semantic-conventions": ^1.17.1
     "@prisma/client": 5.4.2
+    "@prisma/extension-read-replicas": ^0.3.0
     "@prisma/instrumentation": ^5.4.2
     "@swc/cli": ^0.1.62
     "@swc/core": ^1.3.92

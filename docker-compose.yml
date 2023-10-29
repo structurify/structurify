@@ -17,22 +17,45 @@ x-minio-common: &minio-common
 
 version: '3.8'
 services:
-  postgres:
-    image: postgres:16
+  postgres-writer:
+    image: bitnami/postgresql:16
     restart: always
     environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
+      - POSTGRESQL_USERNAME=structurify
+      - POSTGRESQL_PASSWORD=structurify
+      - POSTGRESQL_DATABASE=structurify
+      - POSTGRESQL_POSTGRES_PASSWORD=root
+      - POSTGRESQL_REPLICATION_MODE=master
+      - POSTGRESQL_REPLICATION_USER=replicator
+      - POSTGRESQL_REPLICATION_PASSWORD=password
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready']
       interval: 30s
       timeout: 20s
       retries: 3
     volumes:
-      - ./infra/postgresql/data:/var/lib/postgresql/data/
-      - ./infra/postgresql/init:/docker-entrypoint-initdb.d/
+      - ./infra/postgresql/writer-data:/bitnami/postgresql
     ports:
       - '6432:5432'
+  postgres-reader:
+    image: bitnami/postgresql:16
+    restart: always
+    depends_on:
+      - postgres-writer
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+      - POSTGRESQL_REPLICATION_MODE=slave
+      - POSTGRESQL_MASTER_HOST=postgres-writer
+      - POSTGRESQL_MASTER_PORT_NUMBER=5432
+      - POSTGRESQL_REPLICATION_USER=replicator
+      - POSTGRESQL_REPLICATION_PASSWORD=password
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    ports:
+      - '6433:5432'
 
   cache:
     image: redis
