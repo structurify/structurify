@@ -16,12 +16,6 @@ import { JwtAuthGuard } from '@modules/auth/guards';
 import { User } from '@prisma/client';
 
 import {
-  ProjectsService,
-  OrganizationsService,
-  MembersService,
-} from '../services';
-
-import {
   Project,
   Organization,
   ProjectsResponse,
@@ -32,8 +26,20 @@ import {
   TransferProjectInput,
 } from '@contracts/organizations';
 import { CurrentUser } from '@decorators/current-user.decorator';
+import { Action } from '@contracts/casl';
+import {
+  AppAbility,
+  CheckPlatformPolicies,
+  PlatformMemberPoliciesGuard,
+} from '@modules/platform-casl';
 
-@UseGuards(JwtAuthGuard)
+import {
+  ProjectsService,
+  OrganizationsService,
+  MembersService,
+} from '../services';
+
+@UseGuards(JwtAuthGuard, PlatformMemberPoliciesGuard)
 @Resolver((_) => Project)
 export class ProjectResolver {
   private readonly logger = new Logger(ProjectResolver.name);
@@ -49,11 +55,17 @@ export class ProjectResolver {
     return this.organizationsService.findOneById(root.organizationId);
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, 'Project'),
+  )
   @Query((_) => Project, { nullable: true })
   async project(@Args('id') id: string) {
     return this.projectsService.findOneById(id);
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, 'Project'),
+  )
   @Query((_) => ProjectsResponse)
   async projects(@Args() input: ProjectsArgs): Promise<ProjectsResponse> {
     const { skip, take } = input;
@@ -69,6 +81,9 @@ export class ProjectResolver {
     };
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, 'Project'),
+  )
   @Mutation((_) => Project)
   async projectCreate(
     @Args('input') input: CreateProjectInput,
@@ -84,6 +99,9 @@ export class ProjectResolver {
     return project;
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, 'Project'),
+  )
   @Mutation((_) => Project)
   async projectDelete(
     @Args('input') input: DeleteProjectInput,
@@ -105,6 +123,9 @@ export class ProjectResolver {
     return project;
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, 'Project'),
+  )
   @Mutation((_) => Project)
   async projectUpdate(
     @Args('input') input: UpdateProjectInput,
@@ -126,6 +147,9 @@ export class ProjectResolver {
     return project;
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, 'Project'),
+  )
   @Mutation((_) => Project)
   async projectTransfer(
     @Args('input') { id, newOrganizationId }: TransferProjectInput,

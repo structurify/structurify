@@ -5,6 +5,10 @@ import { UsersService } from '@modules/users/services';
 
 import { CommunicationModule } from '@modules/communication/communication.module';
 import { CoreModule } from '@modules/core/core.module';
+import {
+  PlatformCaslModule,
+  PlatformCaslAbilityFactory,
+} from '@modules/platform-casl/';
 
 import {
   OrganizationsService,
@@ -21,9 +25,10 @@ import {
 } from './resolvers';
 import { UserListener } from './listeners';
 import { InviteJob } from './jobs';
+import { MemberMiddleware } from '../../shared/middlewares';
 
 @Module({
-  imports: [UsersModule, CommunicationModule, CoreModule],
+  imports: [UsersModule, CommunicationModule, CoreModule, PlatformCaslModule],
   providers: [
     OrganizationsService,
     ProjectsService,
@@ -37,6 +42,7 @@ import { InviteJob } from './jobs';
     MailingRepository,
     InviteResolver,
     MemberResolver,
+    PlatformCaslAbilityFactory,
   ],
   exports: [
     OrganizationsService,

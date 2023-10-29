@@ -1,4 +1,10 @@
-import { Global, Module } from '@nestjs/common';
+import {
+  Global,
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { CacheModule } from '@nestjs/cache-manager';
 import * as redisStore from 'cache-manager-redis-store';
 import { GraphQLModule } from '@nestjs/graphql';
@@ -19,6 +25,7 @@ import { DateScalar } from '@app/shared/scalars/date.scalar';
 
 // Providers
 import { PrismaModule } from '@providers/db/prisma/prisma.module';
+import { MemberMiddleware } from '@app/shared/middlewares';
 
 @Global()
 @Module({
@@ -98,4 +105,11 @@ import { PrismaModule } from '@providers/db/prisma/prisma.module';
     I18nModule,
   ],
 })
-export class CoreModule {}
+export class CoreModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(MemberMiddleware).forRoutes({
+      path: '*',
+      method: RequestMethod.ALL,
+    });
+  }
+}

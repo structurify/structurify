@@ -10,7 +10,6 @@ import {
 import { JwtAuthGuard } from '@modules/auth/guards';
 import { User } from '@prisma/client';
 
-import { OrganizationsService, MembersService } from '../services';
 import { UsersService } from '@modules/users/services';
 
 import {
@@ -23,9 +22,16 @@ import {
   DeleteMemberInput,
 } from '@contracts/organizations';
 import { User as UserContract } from '@contracts/users';
+import { Action } from '@contracts/casl';
+import {
+  AppAbility,
+  CheckPlatformPolicies,
+  PlatformMemberPoliciesGuard,
+} from '@modules/platform-casl';
 import { CurrentUser } from '@decorators/current-user.decorator';
+import { OrganizationsService, MembersService } from '../services';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PlatformMemberPoliciesGuard)
 @Resolver((_) => Member)
 export class MemberResolver {
   private readonly logger = new Logger(MemberResolver.name);
@@ -46,11 +52,17 @@ export class MemberResolver {
     return this.usersService.findOneById(root.organizationId);
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, 'Member'),
+  )
   @Query((_) => Member, { nullable: true })
   async member(@Args('input') input: GetMemberInput) {
     return this.membersService.findOne(input.organizationId, input.userId);
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, 'Member'),
+  )
   @Query((_) => MembersResponse)
   async members(@Args() input: MembersArgs): Promise<MembersResponse> {
     const { skip, take } = input;
@@ -66,6 +78,9 @@ export class MemberResolver {
     };
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, 'Member'),
+  )
   @Mutation((_) => Member)
   async memberDelete(
     @Args('input') input: DeleteMemberInput,
@@ -79,6 +94,9 @@ export class MemberResolver {
     });
   }
 
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, 'Member'),
+  )
   @Mutation((_) => Member)
   async memberUpdate(
     @Args('input') input: UpdateMemberInput,

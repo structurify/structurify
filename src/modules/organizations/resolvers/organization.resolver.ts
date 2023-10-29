@@ -1,8 +1,8 @@
 import { Logger, NotFoundException, UseGuards } from '@nestjs/common';
 import { Args, Query, Mutation, Resolver } from '@nestjs/graphql';
 import { JwtAuthGuard } from '@modules/auth/guards';
+import { User, MemberRole } from '@prisma/client';
 
-import { OrganizationsService, MembersService } from '../services';
 import {
   Organization,
   OrganizationsResponse,
@@ -12,7 +12,14 @@ import {
   DeleteOrganizationInput,
 } from '@contracts/organizations';
 import { CurrentUser } from '@decorators/current-user.decorator';
-import { User, MemberRole } from '@prisma/client';
+import {
+  AppAbility,
+  CheckPlatformPolicies,
+  PlatformUserPoliciesGuard,
+  PlatformMemberPoliciesGuard,
+} from '@app/modules/platform-casl';
+import { OrganizationsService, MembersService } from '../services';
+import { Action } from '@app/contracts/casl';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((_) => Organization)
@@ -24,11 +31,19 @@ export class OrganizationResolver {
     private readonly membersService: MembersService,
   ) {}
 
+  @UseGuards(PlatformMemberPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, 'Organization'),
+  )
   @Query((_) => Organization, { nullable: true })
   async organization(@Args('id') id: string) {
     return this.organizationsService.findOneById(id);
   }
 
+  @UseGuards(PlatformMemberPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, 'Organization'),
+  )
   @Query((_) => OrganizationsResponse)
   async organizations(
     @Args() input: OrganizationsArgs,
@@ -52,6 +67,10 @@ export class OrganizationResolver {
     };
   }
 
+  @UseGuards(PlatformUserPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, 'Organization'),
+  )
   @Mutation((_) => Organization)
   async organizationCreate(
     @Args('input') input: CreateOrganizationInput,
@@ -76,6 +95,10 @@ export class OrganizationResolver {
     return organization;
   }
 
+  @UseGuards(PlatformMemberPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, 'Organization'),
+  )
   @Mutation((_) => Organization)
   async organizationDelete(
     @Args('input') input: DeleteOrganizationInput,
@@ -97,6 +120,10 @@ export class OrganizationResolver {
     return organization;
   }
 
+  @UseGuards(PlatformMemberPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, 'Organization'),
+  )
   @Mutation((_) => Organization)
   async organizationUpdate(
     @Args('input') input: UpdateOrganizationInput,

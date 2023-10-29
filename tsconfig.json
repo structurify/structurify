@@ -10,6 +10,7 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "typeRoots": ["@types"],
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,

@@ -11,12 +11,6 @@ import { JwtAuthGuard } from '@modules/auth/guards';
 import { User } from '@prisma/client';
 
 import {
-  OrganizationsService,
-  MembersService,
-  InvitesService,
-} from '../services';
-
-import {
   Invite,
   Organization,
   InvitesResponse,
@@ -27,6 +21,19 @@ import {
   AcceptInviteInput,
 } from '@contracts/organizations';
 import { CurrentUser } from '@decorators/current-user.decorator';
+import { Action } from '@contracts/casl';
+import {
+  AppAbility,
+  CheckPlatformPolicies,
+  PlatformMemberPoliciesGuard,
+  PlatformUserPoliciesGuard,
+} from '@modules/platform-casl';
+
+import {
+  OrganizationsService,
+  MembersService,
+  InvitesService,
+} from '../services';
 
 @UseGuards(JwtAuthGuard)
 @Resolver((_) => Invite)
@@ -44,11 +51,19 @@ export class InviteResolver {
     return this.organizationsService.findOneById(root.organizationId);
   }
 
+  @UseGuards(PlatformUserPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, 'Invite'),
+  )
   @Query((_) => Invite, { nullable: true })
   async invite(@Args('id') id: string) {
     return this.invitesService.findOneById(id);
   }
 
+  @UseGuards(PlatformMemberPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, 'Invite'),
+  )
   @Query((_) => InvitesResponse)
   async invites(@Args() input: InvitesArgs): Promise<InvitesResponse> {
     const { skip, take } = input;
@@ -64,6 +79,10 @@ export class InviteResolver {
     };
   }
 
+  @UseGuards(PlatformMemberPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Create, 'Invite'),
+  )
   @Mutation((_) => Invite)
   async inviteSend(
     @Args('input') input: SendInviteInput,
@@ -77,6 +96,10 @@ export class InviteResolver {
     });
   }
 
+  @UseGuards(PlatformMemberPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Update, 'Invite'),
+  )
   @Mutation((_) => Invite)
   async inviteResend(
     @Args('input') input: ResendInviteInput,
@@ -90,6 +113,10 @@ export class InviteResolver {
     });
   }
 
+  @UseGuards(PlatformMemberPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Delete, 'Invite'),
+  )
   @Mutation((_) => Invite)
   async inviteCancel(
     @Args('input') input: CancelInviteInput,
@@ -103,6 +130,10 @@ export class InviteResolver {
     });
   }
 
+  @UseGuards(PlatformUserPoliciesGuard)
+  @CheckPlatformPolicies((ability: AppAbility) =>
+    ability.can(Action.Read, 'Invite'),
+  )
   @Mutation((_) => Invite)
   async inviteAccept(
     @Args('input') input: AcceptInviteInput,

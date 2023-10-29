@@ -29,6 +29,8 @@
   },
   "dependencies": {
     "@apollo/server": "^4.9.4",
+    "@casl/ability": "^6.5.0",
+    "@casl/prisma": "^1.4.1",
     "@nestjs-modules/mailer": "^1.9.1",
     "@nestjs/apollo": "^12.0.9",
     "@nestjs/axios": "^3.0.0",
