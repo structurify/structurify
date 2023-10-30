@@ -30,14 +30,52 @@
 ## Table of Contents
 
 - [Description](#description)
+- [Requirements](#requirements)
+- [Run Locally](#run-locally)
 - [ALPHA Roadmap](#alpha-roadmap)
-- [BETA Roadmap](#beta-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
 
 ## Description
 
 Structurify is an open-source devtool platform that serves a starter of your future developer api platform. It's designed to serve any of your ideas for future devtools that would alow us as a community to quickly build awesome stuff.
+
+## Requirements
+
+- Docker
+- Node 18
+
+## Run Locally
+
+1. Install dependencies
+```bash
+yarn
+```
+
+2. Set up environment variables
+```bash
+cp .env.example .env
+```
+
+3. Setup docker containers
+```bash
+# linux/mac
+yarn docker:linux
+
+# windows wsl
+yarn docker:windows
+```
+
+4. Run db migrations
+```bash
+yarn db:generate
+yarn db:migration:up
+```
+
+5. Run dev
+```bash
+yarn start:dev
+```
 
 ## ALPHA Roadmap
 
@@ -49,7 +87,7 @@ Structurify is an open-source devtool platform that serves a starter of your fut
   - [x] Mailing
 - [x] Open Telemetry
 - [x] Event Emitter
-- [ ] Permissions
+- [x] Permissions
 - [ ] GraphQL API
   - [x] auth
   - [x] organization
@@ -60,12 +98,6 @@ Structurify is an open-source devtool platform that serves a starter of your fut
   - [ ] api keys
 - [ ] Tests
   - [ ] Unit
-
-## BETA Roadmap
-
-- [ ] DLQ
-- [ ] Tests
-  - [ ] Integration
 
 ## Contributing
 
