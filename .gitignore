@@ -40,7 +40,9 @@ lerna-debug.log*
 .env.staging
 .env.production
 
+# yarn
 .yarn/cache/*
+.yarn/unplugged/*
 
 # Infra
 infra/postgresql
