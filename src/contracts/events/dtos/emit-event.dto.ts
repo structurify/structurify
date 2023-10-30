@@ -5,11 +5,15 @@ import {
   IsOptional,
   IsEnum,
 } from 'class-validator';
+import type { Prisma } from '@prisma/client';
+
+import type { PrismaModels } from '@contracts/common'
 
 import { EventAction } from '../enums';
 import type { EventNames } from '../enums';
 
-export class EmitEventDto<T = any> {
+
+export class EmitEventDto<T = PrismaModels> {
   @IsObject()
   @IsNotEmpty()
   public event: any;
@@ -20,7 +24,7 @@ export class EmitEventDto<T = any> {
 
   @IsString()
   @IsNotEmpty()
-  public entity: string;
+  public entity: Prisma.ModelName;
 
   @IsString()
   @IsNotEmpty()

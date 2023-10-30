@@ -1,10 +1,14 @@
+import type { Prisma } from '@prisma/client';
+
+import type { PrismaModels } from '@contracts/common'
+
 import { EventAction } from '../enums';
 
-export class GenericEvent<T = any> {
+export class GenericEvent<T = PrismaModels> {
   before?: T;
   after?: T;
   action: EventAction;
-  entity: string;
+  entity: Prisma.ModelName;
   entityId: string;
   timestamp: Date;
 }
