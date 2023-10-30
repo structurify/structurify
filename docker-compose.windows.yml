@@ -7,8 +7,8 @@ x-minio-common: &minio-common
     - '9000'
     - '9001'
   environment:
-    MINIO_ROOT_USER: minioadmin
-    MINIO_ROOT_PASSWORD: minioadmin
+    MINIO_ROOT_USER: structurify
+    MINIO_ROOT_PASSWORD: structurify
   healthcheck:
     test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
     interval: 30s
@@ -127,7 +127,7 @@ services:
     environment:
       - http_proxy
       - https_proxy
-      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-masterKey}
+      - MEILI_MASTER_KEY=${MEILI_MASTER_KEY:-structurify}
       - MEILI_NO_ANALYTICS=${MEILI_NO_ANALYTICS:-true}
       - MEILI_ENV=${MEILI_ENV:-development}
       - MEILI_LOG_LEVEL
