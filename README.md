@@ -29,12 +29,14 @@
 
 ## Table of Contents
 
+- [Table of Contents](#table-of-contents)
 - [Description](#description)
 - [Requirements](#requirements)
 - [Run Locally](#run-locally)
 - [ALPHA Roadmap](#alpha-roadmap)
 - [Contributing](#contributing)
 - [License](#license)
+    - [Crafted with ❤️ by Marcin Mrotek](#crafted-with-️-by-marcin-mrotek)
 
 ## Description
 
@@ -69,7 +71,7 @@ yarn docker:windows
 4. Run db migrations
 ```bash
 yarn db:generate
-yarn db:migration:up
+yarn db:migrate:dev
 ```
 
 5. Run dev
