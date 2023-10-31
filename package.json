@@ -149,6 +149,9 @@
     "typescript": "^5.1.3",
     "webpack": "^5.89.0"
   },
+  "resolutions": {
+    "string-width": "^4.2.0"
+  },
   "jest": {
     "moduleFileExtensions": [
       "js",
