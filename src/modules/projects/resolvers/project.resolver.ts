@@ -17,27 +17,27 @@ import { User } from '@prisma/client';
 
 import {
   Project,
-  Organization,
   ProjectsResponse,
   ProjectsArgs,
   CreateProjectInput,
   UpdateProjectInput,
   DeleteProjectInput,
   TransferProjectInput,
-} from '@contracts/organizations';
-import { CurrentUser } from '@decorators/current-user.decorator';
+} from '@contracts/projects';
+import { Organization } from '@contracts/organizations';
 import { Action } from '@contracts/casl';
+import { CurrentUser } from '@decorators/current-user.decorator';
+import {
+  MembersService,
+  OrganizationsService,
+} from '@modules/organizations/services';
 import {
   AppAbility,
   CheckPlatformPolicies,
   PlatformMemberPoliciesGuard,
 } from '@modules/platform-casl';
 
-import {
-  ProjectsService,
-  OrganizationsService,
-  MembersService,
-} from '../services';
+import { ProjectsService } from '../services';
 
 @UseGuards(JwtAuthGuard, PlatformMemberPoliciesGuard)
 @Resolver((_) => Project)
@@ -46,8 +46,8 @@ export class ProjectResolver {
 
   constructor(
     private readonly projectsService: ProjectsService,
-    private readonly membersService: MembersService,
     private readonly organizationsService: OrganizationsService,
+    private readonly membersService: MembersService,
   ) {}
 
   @ResolveField((_) => Organization)

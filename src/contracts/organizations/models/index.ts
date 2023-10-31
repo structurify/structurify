@@ -4,5 +4,3 @@ export * from './member.model';
 export * from './members-response.model';
 export * from './organization.model';
 export * from './organizations-response.model';
-export * from './project.model';
-export * from './projects-response.model';

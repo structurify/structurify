@@ -12,28 +12,23 @@ import {
 
 import {
   OrganizationsService,
-  ProjectsService,
   MembersService,
   InvitesService,
 } from './services';
 import { MailingRepository } from '../communication/repositories';
 import {
   OrganizationResolver,
-  ProjectResolver,
   InviteResolver,
   MemberResolver,
 } from './resolvers';
 import { UserListener } from './listeners';
 import { InviteJob } from './jobs';
-import { MemberMiddleware } from '../../shared/middlewares';
 
 @Module({
   imports: [UsersModule, CommunicationModule, CoreModule, PlatformCaslModule],
   providers: [
     OrganizationsService,
-    ProjectsService,
     OrganizationResolver,
-    ProjectResolver,
     UsersService,
     UserListener,
     InviteJob,
@@ -46,7 +41,6 @@ import { MemberMiddleware } from '../../shared/middlewares';
   ],
   exports: [
     OrganizationsService,
-    ProjectsService,
     MembersService,
     InvitesService,
   ],

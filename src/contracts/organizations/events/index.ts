@@ -9,6 +9,3 @@ export * from './member-updated.event';
 export * from './organization-created.event';
 export * from './organization-deleted.event';
 export * from './organization-updated.event';
-export * from './project-created.event';
-export * from './project-deleted.event';
-export * from './project-updated.event';

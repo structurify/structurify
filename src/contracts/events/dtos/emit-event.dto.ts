@@ -7,11 +7,9 @@ import {
 } from 'class-validator';
 import type { Prisma } from '@prisma/client';
 
-import type { PrismaModels } from '@contracts/common'
+import type { PrismaModels } from '@contracts/common';
 
-import { EventAction } from '../enums';
-import type { EventNames } from '../enums';
-
+import { EventAction, EventNames } from '../enums';
 
 export class EmitEventDto<T = PrismaModels> {
   @IsObject()
