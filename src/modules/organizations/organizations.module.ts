@@ -23,26 +23,34 @@ import {
 } from './resolvers';
 import { UserListener } from './listeners';
 import { InviteJob } from './jobs';
+import { InvitesCache, MembersCache, OrganizationsCache } from './caches';
+import {
+  InvitesRepository,
+  MembersRepository,
+  OrganizationsRepository,
+} from './repositories';
 
 @Module({
   imports: [UsersModule, CommunicationModule, CoreModule, PlatformCaslModule],
   providers: [
     OrganizationsService,
     OrganizationResolver,
+    OrganizationsCache,
+    OrganizationsRepository,
     UsersService,
     UserListener,
     InviteJob,
-    MembersService,
+    InvitesCache,
     InvitesService,
-    MailingRepository,
     InviteResolver,
+    InvitesRepository,
+    MembersCache,
+    MembersService,
     MemberResolver,
+    MembersRepository,
+    MailingRepository,
     PlatformCaslAbilityFactory,
   ],
-  exports: [
-    OrganizationsService,
-    MembersService,
-    InvitesService,
-  ],
+  exports: [OrganizationsService, MembersService, InvitesService],
 })
 export class OrganizationsModule {}
