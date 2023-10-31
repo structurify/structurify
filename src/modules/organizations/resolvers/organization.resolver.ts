@@ -31,7 +31,7 @@ export class OrganizationResolver {
     private readonly membersService: MembersService,
   ) {}
 
-  @UseGuards(PlatformMemberPoliciesGuard)
+  @UseGuards(PlatformUserPoliciesGuard)
   @CheckPlatformPolicies((ability: AppAbility) =>
     ability.can(Action.Read, 'Organization'),
   )
@@ -40,7 +40,7 @@ export class OrganizationResolver {
     return this.organizationsService.findOneById(id);
   }
 
-  @UseGuards(PlatformMemberPoliciesGuard)
+  @UseGuards(PlatformUserPoliciesGuard)
   @CheckPlatformPolicies((ability: AppAbility) =>
     ability.can(Action.Read, 'Organization'),
   )

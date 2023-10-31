@@ -31,6 +31,7 @@ export class PlatformCaslAbilityFactory {
 
     can(Action.Manage, 'User', { id: user.id });
     can(Action.Create, 'Organization');
+    can(Action.Read, 'Organization');
     can(Action.Read, 'Invite');
 
     return build({
