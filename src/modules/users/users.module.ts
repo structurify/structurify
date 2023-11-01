@@ -1,16 +1,16 @@
 import { Module } from '@nestjs/common';
 
-import { CommunicationModule } from '@modules/communication/communication.module';
+import { CommunicationModule } from '@modules/communication';
 import { MailingRepository } from '@modules/communication/repositories';
 import {
   PlatformCaslModule,
   PlatformCaslAbilityFactory,
 } from '@modules/platform-casl/';
 
-import { UsersCache } from './cache'
+import { UsersCache } from './cache';
 import { UserListener } from './listeners';
 import { UserResolver } from './resolvers';
-import { UsersRepository } from './repositories'
+import { UsersRepository } from './repositories';
 import { UsersService } from './services';
 
 @Module({

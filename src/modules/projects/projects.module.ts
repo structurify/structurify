@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 
-import { CoreModule } from '@modules/core/core.module';
+import { CoreModule } from '@modules/core';
 import {
   PlatformCaslModule,
   PlatformCaslAbilityFactory,

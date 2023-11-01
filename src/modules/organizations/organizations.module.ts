@@ -3,8 +3,8 @@ import { Module } from '@nestjs/common';
 import { UsersModule } from '@modules/users/users.module';
 import { UsersService } from '@modules/users/services';
 
-import { CommunicationModule } from '@modules/communication/communication.module';
-import { CoreModule } from '@modules/core/core.module';
+import { CommunicationModule } from '@modules/communication';
+import { CoreModule } from '@modules/core';
 import {
   PlatformCaslModule,
   PlatformCaslAbilityFactory,
