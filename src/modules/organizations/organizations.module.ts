@@ -51,6 +51,16 @@ import {
     MailingRepository,
     PlatformCaslAbilityFactory,
   ],
-  exports: [OrganizationsService, MembersService, InvitesService],
+  exports: [
+    OrganizationsCache,
+    OrganizationsService,
+    OrganizationsRepository,
+    MembersCache,
+    MembersService,
+    MembersRepository,
+    InvitesCache,
+    InvitesService,
+    InvitesRepository,
+  ],
 })
 export class OrganizationsModule {}
