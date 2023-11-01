@@ -1,15 +1,8 @@
 import { Module } from '@nestjs/common';
 
 import { CoreModule } from '@modules/core';
-import {
-  PlatformCaslModule,
-  PlatformCaslAbilityFactory,
-} from '@modules/platform-casl/';
-import {
-  OrganizationsModule,
-  OrganizationsService,
-  MembersService,
-} from '@modules/organizations';
+import { PlatformCaslModule } from '@modules/platform-casl';
+import { OrganizationsModule } from '@modules/organizations';
 
 import { ProjectsService } from './services';
 import { ProjectResolver } from './resolvers';
@@ -23,9 +16,6 @@ import { ProjectsCache } from './caches';
     ProjectResolver,
     ProjectsRepository,
     ProjectsCache,
-    PlatformCaslAbilityFactory,
-    OrganizationsService,
-    MembersService,
   ],
   exports: [ProjectsService, ProjectsRepository, ProjectsCache],
 })

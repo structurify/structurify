@@ -1,10 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { CommunicationModule } from '@modules/communication';
-import {
-  PlatformCaslModule,
-  PlatformCaslAbilityFactory,
-} from '@modules/platform-casl/';
+import { PlatformCaslModule } from '@modules/platform-casl/';
 
 import { UsersCache } from './cache';
 import { UserListener } from './listeners';
@@ -20,7 +17,6 @@ import { UsersService } from './services';
     UserListener,
     UserResolver,
     UsersRepository,
-    PlatformCaslAbilityFactory,
   ],
   exports: [UsersService, UsersCache, UsersRepository],
 })
