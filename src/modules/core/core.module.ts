@@ -24,7 +24,7 @@ import { MeiliSearchModule } from 'nestjs-meilisearch';
 import { DateScalar } from '@app/shared/scalars/date.scalar';
 
 // Providers
-import { PrismaModule } from '@providers/db/prisma/prisma.module';
+import { PrismaModule } from '@providers/db/prisma/';
 import { MemberMiddleware } from '@app/shared/middlewares';
 
 @Global()

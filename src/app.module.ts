@@ -7,16 +7,16 @@ import {
 } from '@nestjs/common';
 
 // Modules
-import { AuthModule } from '@modules/auth/auth.module';
-import { EventsModule } from '@modules/events/events.module';
-import { HealthModule } from '@modules/health/health.module';
-import { UsersModule } from '@modules/users/users.module';
-import { OrganizationsModule } from '@modules/organizations/organizations.module';
-import { ProjectsModule } from '@modules/projects/projects.module';
-import { CommunicationModule } from '@modules/communication/communication.module';
-import { CoreModule } from '@modules/core/core.module';
-import { DataLakeModule } from '@modules/data-lake/data-lake.module';
-import { SearchModule } from '@modules/search/search.module';
+import { AuthModule } from '@modules/auth';
+import { EventsModule } from '@modules/events';
+import { HealthModule } from '@modules/health';
+import { UsersModule } from '@modules/users';
+import { OrganizationsModule } from '@modules/organizations';
+import { ProjectsModule } from '@modules/projects';
+import { CommunicationModule } from '@modules/communication';
+import { CoreModule } from '@modules/core';
+import { DataLakeModule } from '@modules/data-lake';
+import { SearchModule } from '@modules/search';
 
 const modules: Array<
   Type | DynamicModule | Promise<DynamicModule> | ForwardReference
