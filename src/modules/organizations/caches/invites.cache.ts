@@ -29,9 +29,14 @@ export class InvitesCache {
     return entry;
   }
 
-  async set(Invite: Invite) {
-    await this.cacheService.set(`Invite-${Invite.id}/ID`, Invite);
-    this.logger.debug(`Invite-${Invite.id}/ID stored in cache`);
+  async set(invite: Invite) {
+    await Promise.all([
+      this.cacheService.set(`Invite-${invite.id}/ID`, invite),
+      this.cacheService.set(`Invite-${invite.token}/Token`, invite),
+    ]);
+
+    this.logger.debug(`Invite-${invite.id}/ID stored in cache`);
+    this.logger.debug(`Invite-${invite.token}/Token stored in cache`);
   }
 
   async delete(id: string) {

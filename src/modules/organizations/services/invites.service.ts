@@ -1,6 +1,5 @@
 import {
   Injectable,
-  Inject,
   Logger,
   NotFoundException,
   BadRequestException,
@@ -10,8 +9,6 @@ import * as dayjs from 'dayjs';
 import { ConfigService } from '@nestjs/config';
 import { generate } from 'generate-password';
 import { I18nService } from 'nestjs-i18n';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 
 import {
   SendInviteDto,
@@ -31,105 +28,62 @@ import { EventAction } from '@contracts/events';
 import { EventsService } from '@modules/events/services';
 import { MailingRepository } from '@modules/communication/repositories';
 import { UsersService } from '@modules/users/services';
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
 
 import { OrganizationsService } from './organizations.service';
 import { MembersService } from './members.service';
+import { InvitesCache } from '../caches';
+import { InvitesRepository } from '../repositories';
 
 @Injectable()
 export class InvitesService {
   private readonly logger = new Logger(InvitesService.name);
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheService: Cache,
-    private readonly prisma: PrismaService,
-    private readonly eventsService: EventsService,
-    private readonly mailingRepository: MailingRepository,
     private readonly configService: ConfigService,
-    private readonly organizationsService: OrganizationsService,
-    private readonly membersService: MembersService,
-    private readonly usersService: UsersService,
+    private readonly eventsService: EventsService,
+    private readonly invitesCache: InvitesCache,
+    private readonly invitesRepository: InvitesRepository,
     private readonly i18n: I18nService,
+    private readonly mailingRepository: MailingRepository,
+    private readonly membersService: MembersService,
+    private readonly organizationsService: OrganizationsService,
+    private readonly usersService: UsersService,
   ) {}
 
   async findOneById(id: string): Promise<Invite | null> {
-    const cachedData = await this.cacheService.get<Invite>(`Invite-${id}/ID`);
+    const cachedData = await this.invitesCache.findOneById(id);
     if (cachedData) {
-      this.logger.debug(`Invite-${id}/ID found in cache`);
       return cachedData;
     }
 
-    const invite = await this.prisma.invite.findUnique({
-      where: {
-        id,
-        deletedAt: null,
-      },
-    });
-
+    const invite = await this.invitesRepository.findOneById(id);
     if (!!invite) {
-      await this.cacheService.set(`Invite-${id}/ID`, invite);
-      this.logger.debug(`Invite-${id}/ID stored in cache`);
+      await this.invitesCache.set(invite);
     }
 
     return invite;
   }
 
   async findOneByToken(token: string): Promise<Invite | null> {
-    const cachedData = await this.cacheService.get<Invite>(
-      `Invite-${token}/Token`,
-    );
+    const cachedData = await this.invitesCache.findOneByToken(token);
     if (cachedData) {
-      this.logger.debug(`Invite-${token}/Token found in cache`);
       return cachedData;
     }
 
-    const invite = await this.prisma.invite.findUnique({
-      where: {
-        token,
-        deletedAt: null,
-      },
-    });
-
+    const invite = await this.invitesRepository.findOneByToken(token);
     if (!!invite) {
-      await this.cacheService.set(`Invite-${token}/Token`, invite);
-      this.logger.debug(`Invite-${token}/Token stored in cache`);
+      await this.invitesCache.set(invite);
     }
 
     return invite;
   }
 
-  async findAll({
-    organizationId,
-    ...args
-  }: InvitesArgs): Promise<[Invite[], number]> {
-    return Promise.all([
-      this.prisma.invite.findMany({
-        ...args,
-        where: {
-          organizationId,
-          deletedAt: null,
-        },
-      }),
-      this.prisma.invite.count({
-        ...args,
-        where: {
-          organizationId,
-          deletedAt: null,
-        },
-      }),
-    ]);
+  async findAll(args: InvitesArgs): Promise<[Invite[], number]> {
+    return this.invitesRepository.findAll(args);
   }
 
   async findAllToExpire(): Promise<Invite[]> {
-    return this.prisma.invite.findMany({
-      where: {
-        expiresAt: {
-          lte: dayjs().toDate(),
-        },
-        status: InviteStatus.PENDING,
-        deletedAt: null,
-      },
-    });
+    return this.invitesRepository.findAllToExpire();
   }
 
   async sendInvite(dto: SendInviteDto): Promise<Invite> {
@@ -161,26 +115,20 @@ export class InvitesService {
       lowercase: true,
     });
 
-    const invite = await this.prisma.invite.create({
-      data: {
-        token,
-        email: dto.email,
-        expiresAt: dayjs()
-          .add(
-            Number(this.configService.get('INVITE_EXPIRATION')),
-            'millisecond',
-          )
-          .toDate(),
-        role: dto.role,
-        status: InviteStatus.PENDING,
-        updatedBy: dto.createdBy,
-        createdBy: dto.createdBy,
-        organizationId: dto.organizationId,
-      },
+    const invite = await this.invitesRepository.create({
+      token,
+      email: dto.email,
+      expiresAt: dayjs()
+        .add(Number(this.configService.get('INVITE_EXPIRATION')), 'millisecond')
+        .toDate(),
+      role: dto.role,
+      status: InviteStatus.PENDING,
+      updatedBy: dto.createdBy,
+      createdBy: dto.createdBy,
+      organizationId: dto.organizationId,
     });
 
-    await this.cacheService.set(`Invite-${invite.id}/ID`, invite);
-    this.logger.debug(`Invite-${invite.id}/ID stored in cache`);
+    await this.invitesCache.set(invite);
 
     this.logger.debug('sendInvite - invite', {
       invite,
@@ -249,27 +197,16 @@ export class InvitesService {
       lowercase: true,
     });
 
-    const updatedInvite = await this.prisma.invite.update({
-      where: {
-        id: dto.id,
-        deletedAt: null,
-      },
-      data: {
-        token,
-        expiresAt: dayjs()
-          .add(
-            Number(this.configService.get('INVITE_EXPIRATION')),
-            'millisecond',
-          )
-          .toDate(),
-        status: InviteStatus.PENDING,
-        updatedBy: dto.updatedBy,
-      },
+    const updatedInvite = await this.invitesRepository.update(dto.id, {
+      token,
+      expiresAt: dayjs()
+        .add(Number(this.configService.get('INVITE_EXPIRATION')), 'millisecond')
+        .toDate(),
+      status: InviteStatus.PENDING,
+      updatedBy: dto.updatedBy,
     });
 
-    await this.cacheService.set(`Invite-${updatedInvite.id}/ID`, updatedInvite);
-    this.logger.debug(`Invite-${updatedInvite.id}/ID updated in cache`);
-
+    await this.invitesCache.set(updatedInvite);
     this.logger.debug('resendInvite - updatedInvite', {
       updatedInvite,
     });
@@ -323,20 +260,13 @@ export class InvitesService {
       throw new NotFoundException(dto.id);
     }
 
-    const updatedInvite = await this.prisma.invite.update({
-      where: {
-        id: dto.id,
-        deletedAt: null,
-      },
-      data: {
-        status: InviteStatus.CANCELLED,
-        deletedBy: dto.deletedBy,
-        deletedAt: new Date(),
-      },
+    const updatedInvite = await this.invitesRepository.update(dto.id, {
+      status: InviteStatus.CANCELLED,
+      deletedBy: dto.deletedBy,
+      deletedAt: new Date(),
     });
 
-    await this.cacheService.del(`Invite-${updatedInvite.id}/ID`);
-    this.logger.debug(`Invite-${updatedInvite.id}/ID deleted from cache`);
+    await this.invitesCache.delete(dto.id);
 
     this.logger.debug('cancelInvite - updatedInvite', {
       updatedInvite,
@@ -394,19 +324,12 @@ export class InvitesService {
       );
     }
 
-    const updatedInvite = await this.prisma.invite.update({
-      where: {
-        token: dto.token,
-        deletedAt: null,
-      },
-      data: {
-        status: InviteStatus.ACCEPTED,
-        updatedBy: dto.updatedBy,
-      },
+    const updatedInvite = await this.invitesRepository.update(invitation.id, {
+      status: InviteStatus.ACCEPTED,
+      updatedBy: dto.updatedBy,
     });
 
-    await this.cacheService.set(`Invite-${updatedInvite.id}/ID`, updatedInvite);
-    this.logger.debug(`Invite-${updatedInvite.id}/ID updated in cache`);
+    await this.invitesCache.set(updatedInvite);
 
     this.logger.debug('acceptInvite - updatedInvite', {
       updatedInvite,
@@ -435,19 +358,12 @@ export class InvitesService {
       throw new NotFoundException(dto.id);
     }
 
-    const updatedInvite = await this.prisma.invite.update({
-      where: {
-        id: dto.id,
-        deletedAt: null,
-      },
-      data: {
-        status: InviteStatus.EXPIRED,
-        updatedBy: dto.expiredBy,
-      },
+    const updatedInvite = await this.invitesRepository.update(dto.id, {
+      status: InviteStatus.EXPIRED,
+      updatedBy: dto.expiredBy,
     });
 
-    await this.cacheService.set(`Invite-${updatedInvite.id}/ID`, updatedInvite);
-    this.logger.debug(`Invite-${updatedInvite.id}/ID updated in cache`);
+    await this.invitesCache.set(updatedInvite);
 
     this.logger.debug('expireInvite - updatedInvite', {
       updatedInvite,
