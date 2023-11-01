@@ -7,7 +7,7 @@ import {
 import { Test, TestingModule } from '@nestjs/testing';
 import { createMock } from 'ts-auto-mock';
 
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
+import { PrismaService } from '@providers/db/prisma';
 
 import { HealthController } from './health.controller';
 

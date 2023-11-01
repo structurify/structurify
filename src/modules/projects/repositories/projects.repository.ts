@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Project, ProjectStatus } from '@prisma/client';
 
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
+import { PrismaService } from '@providers/db/prisma';
 import {
   CreateProjectDto,
   DeleteProjectDto,

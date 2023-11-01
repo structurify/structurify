@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Organization, Prisma } from '@prisma/client';
 
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
+import { PrismaService } from '@providers/db/prisma';
 import {
   OrganizationsArgs,
   OrganizationsByUserArgs,

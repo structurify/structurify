@@ -1,16 +1,8 @@
-import {
-  Injectable,
-  Logger,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { NotFoundException } from '@nestjs/common';
 import { I18nService } from 'nestjs-i18n';
-
-
-import { UsersCache } from '../cache';
-import { UsersRepository } from '../repositories';
 
 import {
   CreateUserDto,
@@ -25,6 +17,9 @@ import {
 } from '@contracts/users';
 import { EventAction } from '@contracts/events';
 import { EventsService } from '@modules/events/services';
+
+import { UsersCache } from '../cache';
+import { UsersRepository } from '../repositories';
 
 @Injectable()
 export class UsersService {
@@ -52,7 +47,7 @@ export class UsersService {
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
-    const cachedData = await this.usersCache.findOneByEmail(email)
+    const cachedData = await this.usersCache.findOneByEmail(email);
     if (cachedData) {
       return cachedData;
     }
@@ -66,12 +61,12 @@ export class UsersService {
   }
 
   async findOneByUsername(username: string): Promise<User | null> {
-    const cachedData = await this.usersCache.findOneByUsername(username)
+    const cachedData = await this.usersCache.findOneByUsername(username);
     if (cachedData) {
       return cachedData;
     }
 
-    const user = await this.usersRepository.findOneByUsername(username)
+    const user = await this.usersRepository.findOneByUsername(username);
     if (!!user) {
       await this.usersCache.set(user);
     }
@@ -85,7 +80,7 @@ export class UsersService {
 
   async create(dto: CreateUserDto): Promise<User> {
     const user = await this.usersRepository.create(dto);
-    
+
     await this.usersCache.set(user);
 
     this.eventsService.emitEvent({
@@ -108,7 +103,7 @@ export class UsersService {
       throw new NotFoundException(id);
     }
 
-    const updatedUser = await this.usersRepository.update(dto)
+    const updatedUser = await this.usersRepository.update(dto);
 
     await this.usersCache.set(updatedUser);
 
@@ -148,7 +143,7 @@ export class UsersService {
       );
     }
 
-    const updatedUser = await this.usersRepository.updatePassword(dto)
+    const updatedUser = await this.usersRepository.updatePassword(dto);
 
     await this.usersCache.set(updatedUser);
 
@@ -173,7 +168,7 @@ export class UsersService {
       throw new NotFoundException(id);
     }
 
-    const updatedUser = await this.usersRepository.delete(dto)
+    const updatedUser = await this.usersRepository.delete(dto);
 
     await this.usersCache.delete(updatedUser.id);
 

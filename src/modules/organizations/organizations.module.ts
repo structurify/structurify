@@ -1,21 +1,15 @@
 import { Module } from '@nestjs/common';
 
 import { UsersModule } from '@modules/users/users.module';
-import { UsersService } from '@modules/users/services';
-
 import { CommunicationModule } from '@modules/communication';
 import { CoreModule } from '@modules/core';
-import {
-  PlatformCaslModule,
-  PlatformCaslAbilityFactory,
-} from '@modules/platform-casl/';
+import { PlatformCaslModule } from '@modules/platform-casl/';
 
 import {
   OrganizationsService,
   MembersService,
   InvitesService,
 } from './services';
-import { MailingRepository } from '../communication/repositories';
 import {
   OrganizationResolver,
   InviteResolver,
@@ -37,7 +31,6 @@ import {
     OrganizationResolver,
     OrganizationsCache,
     OrganizationsRepository,
-    UsersService,
     UserListener,
     InviteJob,
     InvitesCache,
@@ -48,8 +41,6 @@ import {
     MembersService,
     MemberResolver,
     MembersRepository,
-    MailingRepository,
-    PlatformCaslAbilityFactory,
   ],
   exports: [
     OrganizationsCache,

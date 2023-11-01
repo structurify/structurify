@@ -24,9 +24,10 @@ import {
   InviteUpdatedEvent,
   ExpireInviteDto,
 } from '@contracts/organizations';
+import { EmailTemplate } from '@contracts/communication';
 import { EventAction } from '@contracts/events';
-import { EventsService } from '@modules/events/services';
-import { MailingRepository } from '@modules/communication/repositories';
+import { EventsService } from '@modules/events';
+import { MailingService } from '@modules/communication';
 import { UsersService } from '@modules/users/services';
 
 import { OrganizationsService } from './organizations.service';
@@ -44,7 +45,7 @@ export class InvitesService {
     private readonly invitesCache: InvitesCache,
     private readonly invitesRepository: InvitesRepository,
     private readonly i18n: I18nService,
-    private readonly mailingRepository: MailingRepository,
+    private readonly mailingService: MailingService,
     private readonly membersService: MembersService,
     private readonly organizationsService: OrganizationsService,
     private readonly usersService: UsersService,
@@ -144,11 +145,12 @@ export class InvitesService {
       context,
     });
 
-    await this.mailingRepository.sendMail({
+    await this.mailingService.sendMail({
       to: dto.email,
       subject: context.subject,
-      template: 'emails/organizations/invite-send',
+      template: EmailTemplate.INVITE_SEND,
       context,
+      sendBy: dto.createdBy,
     });
 
     this.eventsService.emitEvent({
@@ -221,11 +223,12 @@ export class InvitesService {
       context,
     });
 
-    await this.mailingRepository.sendMail({
+    await this.mailingService.sendMail({
       to: invite.email,
       subject: context.subject,
-      template: 'emails/organizations/invite-send',
+      template: EmailTemplate.INVITE_SEND,
       context,
+      sendBy: dto.updatedBy,
     });
 
     this.eventsService.emitEvent({

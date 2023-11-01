@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { I18nService } from 'nestjs-i18n';
 
 import { EventsService } from '@modules/events/services';
-import { MailingRepository } from '@modules/communication/repositories';
+import { MailingRepository } from '@app/modules/communication/services';
 import { UsersService } from '@modules/users/services';
 import { PrismaService } from '@providers/db/prisma/services';
 

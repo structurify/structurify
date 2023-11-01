@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 
 import { CommunicationModule } from '@modules/communication';
-import { MailingRepository } from '@modules/communication/repositories';
 import {
   PlatformCaslModule,
   PlatformCaslAbilityFactory,
@@ -16,7 +15,6 @@ import { UsersService } from './services';
 @Module({
   imports: [CommunicationModule, PlatformCaslModule],
   providers: [
-    MailingRepository,
     UsersService,
     UsersCache,
     UserListener,

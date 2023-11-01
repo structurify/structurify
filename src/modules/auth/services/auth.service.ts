@@ -15,9 +15,10 @@ import * as dayjs from 'dayjs';
 
 import { generateRandomString } from '@shared/utils';
 import { ResetPasswordInput } from '@contracts/auth';
-import { UsersService } from '@modules/users/services';
-import { MailingRepository } from '@modules/communication/repositories';
+import { UsersService } from '@modules/users';
+import { MailingService } from '@app/modules/communication';
 import { TokensService } from './tokens.service';
+import { EmailTemplate } from '@app/contracts/communication';
 
 @Injectable()
 export class AuthService {
@@ -29,7 +30,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     private readonly tokensService: TokensService,
     private readonly i18nService: I18nService,
-    private readonly mailingRepository: MailingRepository,
+    private readonly mailingService: MailingService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<User> {
@@ -169,11 +170,15 @@ export class AuthService {
       context,
     });
 
-    await this.mailingRepository.sendMail({
+    await this.mailingService.sendMail({
       to: user.email,
       subject: context.subject,
-      template: 'emails/auth/forgot-password',
+      template: EmailTemplate.AUTH_FORGOT_PASSWORD,
       context,
+      sendBy: {
+        service: 'auth-module',
+        serviceDetails: 'Forgot password request',
+      },
     });
   }
 

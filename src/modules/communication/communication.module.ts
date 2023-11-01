@@ -3,9 +3,9 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Module } from '@nestjs/common';
-import { I18nModule, I18nService } from 'nestjs-i18n';
+import { I18nService } from 'nestjs-i18n';
 
-import { MailingRepository } from './repositories';
+import { MailingService } from './services';
 
 @Module({
   imports: [
@@ -24,7 +24,7 @@ import { MailingRepository } from './repositories';
       }),
     }),
   ],
-  providers: [MailingRepository],
-  exports: [MailingRepository],
+  providers: [MailingService],
+  exports: [MailingService],
 })
 export class CommunicationModule {}

@@ -4,7 +4,7 @@ import { NotFoundException } from '@nestjs/common';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Cache } from 'cache-manager';
 
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
+import { PrismaService } from '@providers/db/prisma';
 import { EventsService } from '@modules/events/services';
 
 import { EventAction } from '@contracts/events';

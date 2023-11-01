@@ -1,12 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { I18nService } from 'nestjs-i18n';
 
-import { EventsService } from '@modules/events/services';
+import { EventsService } from '@modules/events';
 
-import { UsersCache } from '../cache';
-import { UsersRepository } from '../repositories'
 import { UsersService } from './users.service';
-
+import { UsersCache } from '../cache';
+import { UsersRepository } from '../repositories';
 
 describe('UsersService', () => {
   let service: UsersService;

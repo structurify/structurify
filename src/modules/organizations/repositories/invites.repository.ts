@@ -4,7 +4,7 @@ import * as dayjs from 'dayjs';
 
 import { InvitesArgs } from '@contracts/organizations';
 
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
+import { PrismaService } from '@providers/db/prisma';
 
 @Injectable()
 export class InvitesRepository {

@@ -3,7 +3,8 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { I18nService } from 'nestjs-i18n';
 
 import { UserCreatedEvent, UserEvents } from '@contracts/users';
-import { MailingRepository } from '@modules/communication/repositories';
+import { MailingService } from '@modules/communication';
+import { EmailTemplate } from '@app/contracts/communication';
 
 @Injectable()
 export class UserListener {
@@ -11,7 +12,7 @@ export class UserListener {
 
   constructor(
     private readonly i18n: I18nService,
-    private readonly mailingRepository: MailingRepository,
+    private readonly mailingService: MailingService,
   ) {}
 
   @OnEvent(UserEvents.USER_CREATED)
@@ -34,11 +35,15 @@ export class UserListener {
         event,
       });
 
-      await this.mailingRepository.sendMail({
+      await this.mailingService.sendMail({
         to: event.after!.email,
         subject: context.subject,
-        template: 'welcome',
+        template: EmailTemplate.WELCOME,
         context,
+        sendBy: {
+          service: 'users-module',
+          serviceDetails: 'user listener for created event',
+        },
       });
 
       this.logger.log('handleUserCreatedEvent - sent');

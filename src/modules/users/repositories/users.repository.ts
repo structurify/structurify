@@ -1,11 +1,8 @@
-import {
-  Injectable,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
+import { PrismaService } from '@providers/db/prisma';
 import {
   CreateUserDto,
   UpdateUserDto,
@@ -18,12 +15,10 @@ import {
 export class UsersRepository {
   private readonly logger = new Logger(UsersRepository.name);
 
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findOneById(id: string): Promise<User | null> {
-   return this.prisma.user.findUnique({
+    return this.prisma.user.findUnique({
       where: {
         id,
         deletedAt: null,
@@ -32,24 +27,21 @@ export class UsersRepository {
   }
 
   async findOneByEmail(email: string): Promise<User | null> {
-  return this.prisma.user.findUnique({
+    return this.prisma.user.findUnique({
       where: {
         email,
         deletedAt: null,
       },
     });
-
   }
 
   async findOneByUsername(username: string): Promise<User | null> {
-  return this.prisma.user.findUnique({
+    return this.prisma.user.findUnique({
       where: {
         username,
         deletedAt: null,
       },
     });
-
-  
   }
 
   async findAll(args: UsersArgs): Promise<[User[], number]> {

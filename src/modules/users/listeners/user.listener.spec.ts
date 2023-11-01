@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { I18nService } from 'nestjs-i18n';
 
-import { MailingRepository } from '@modules/communication/repositories';
+import { MailingRepository } from '@app/modules/communication/services';
 
 import { UserListener } from './user.listener';
 

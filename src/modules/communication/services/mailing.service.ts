@@ -3,34 +3,27 @@ import * as fs from 'fs';
 import { compile } from 'handlebars';
 // @ts-ignore
 import * as mjml2html from 'mjml';
-
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { join } from 'path';
 
-interface SendMail {
-  template: string;
-  to: string;
-  subject: string;
-  context: any;
-  [key: string]: any;
-}
+import { SendMailDto } from '@contracts/communication';
 
 @Injectable()
-export class MailingRepository {
-  private readonly logger = new Logger(MailingRepository.name);
+export class MailingService {
+  private readonly logger = new Logger(MailingService.name);
 
   constructor(
     private readonly configService: ConfigService,
     private readonly mailerService: MailerService,
   ) {}
 
-  async sendMail(params: SendMail): Promise<void> {
-    this.logger.debug('MailingRepository#sendMail - params', {
+  async sendMail(params: SendMailDto): Promise<void> {
+    this.logger.debug('MailingService#sendMail - params', {
       params,
     });
 
-    const { to, template, context, subject, ...override } = params;
+    const { to, template, context, subject, override = {} } = params;
 
     const path = join(__dirname, `/src/templates/${template}.hbs`);
 

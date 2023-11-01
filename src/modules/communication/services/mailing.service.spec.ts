@@ -2,15 +2,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConfigService } from '@nestjs/config';
 import { MailerService } from '@nestjs-modules/mailer';
 
-import { MailingRepository } from './mailing.repository';
+import { MailingService } from './mailing.service';
 
-describe('MailingRepository', () => {
-  let service: MailingRepository;
+describe('MailingService', () => {
+  let service: MailingService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        MailingRepository,
+        MailingService,
         {
           provide: ConfigService,
           useValue: {},
@@ -22,7 +22,7 @@ describe('MailingRepository', () => {
       ],
     }).compile();
 
-    service = module.get<MailingRepository>(MailingRepository);
+    service = module.get<MailingService>(MailingService);
   });
 
   it('should be defined', () => {
