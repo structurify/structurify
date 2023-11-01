@@ -1,11 +1,7 @@
 import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
 import { Organization } from '@prisma/client';
 import { generate } from 'generate-password';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
-import { EventsService } from '@modules/events/services';
 import {
   CreateOrganizationDto,
   DeleteOrganizationDto,
@@ -17,86 +13,44 @@ import {
   OrganizationDeletedEvent,
   OrganizationUpdatedEvent,
 } from '@contracts/organizations';
-import { EventAction } from '@app/contracts/events';
+import { EventAction } from '@contracts/events';
+import { EventsService } from '@modules/events';
+
+import { OrganizationsCache } from '../caches';
+import { OrganizationsRepository } from '../repositories';
 
 @Injectable()
 export class OrganizationsService {
   private readonly logger = new Logger(OrganizationsService.name);
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheService: Cache,
-    private readonly prisma: PrismaService,
     private readonly eventsService: EventsService,
+    private readonly organizationsCache: OrganizationsCache,
+    private readonly organizationsRepository: OrganizationsRepository,
   ) {}
 
   async findOneById(id: string): Promise<Organization | null> {
-    const cachedData = await this.cacheService.get<Organization>(
-      `Organization-${id}`,
-    );
+    const cachedData = await this.organizationsCache.findOneById(id);
     if (cachedData) {
-      this.logger.debug(`Organization-${id} found in cache`);
       return cachedData;
     }
 
-    const organization = await this.prisma.organization.findUnique({
-      where: {
-        id,
-        deletedAt: null,
-      },
-    });
-
+    const organization = await this.organizationsRepository.findOneById(id);
     if (!!organization) {
-      await this.cacheService.set(`Organization-${id}`, organization);
-      this.logger.debug(`Organization-${id} stored in cache`);
+      await this.organizationsCache.set(organization);
     }
+
     return organization;
   }
 
   async findAll(args: OrganizationsArgs): Promise<[Organization[], number]> {
-    return Promise.all([
-      this.prisma.organization.findMany({
-        ...args,
-        where: {
-          deletedAt: null,
-        },
-      }),
-      this.prisma.organization.count({
-        ...args,
-        where: {
-          deletedAt: null,
-        },
-      }),
-    ]);
+    return this.organizationsRepository.findAll(args);
   }
 
-  async findAllByUserId({
-    userId,
-    ...args
-  }: OrganizationsByUserArgs): Promise<[Organization[], number]> {
-    return Promise.all([
-      this.prisma.organization.findMany({
-        ...args,
-        where: {
-          deletedAt: null,
-          members: {
-            some: {
-              userId,
-            },
-          },
-        },
-      }),
-      this.prisma.organization.count({
-        ...args,
-        where: {
-          deletedAt: null,
-          members: {
-            every: {
-              userId,
-            },
-          },
-        },
-      }),
-    ]);
+  async findAllByUserId(
+    args: OrganizationsByUserArgs,
+  ): Promise<[Organization[], number]> {
+    return this.organizationsRepository.findAllByUserId(args);
   }
 
   async create(input: CreateOrganizationDto): Promise<Organization> {
@@ -108,19 +62,12 @@ export class OrganizationsService {
       lowercase: true,
     });
 
-    const organization = await this.prisma.organization.create({
-      data: {
-        ...input,
-        slug,
-        updatedBy: input.createdBy,
-      },
+    const organization = await this.organizationsRepository.create({
+      ...input,
+      slug,
+      updatedBy: input.createdBy,
     });
-
-    await this.cacheService.set(
-      `Organization-${organization.id}`,
-      organization,
-    );
-    this.logger.debug(`Organization-${organization.id} stored in cache`);
+    await this.organizationsCache.set(organization);
 
     this.eventsService.emitEvent({
       entity: 'Organization',
@@ -142,21 +89,12 @@ export class OrganizationsService {
       throw new NotFoundException(id);
     }
 
-    const updatedOrganiation = await this.prisma.organization.update({
-      where: {
-        id,
-        deletedAt: null,
-      },
-      data: {
-        ...rest,
-      },
-    });
-
-    await this.cacheService.set(
-      `Organization-${updatedOrganiation.id}`,
-      updatedOrganiation,
+    const updatedOrganiation = await this.organizationsRepository.update(
+      id,
+      rest,
     );
-    this.logger.debug(`Organization-${updatedOrganiation.id} updated in cache`);
+
+    await this.organizationsCache.set(updatedOrganiation);
 
     this.eventsService.emitEvent({
       entity: 'Organization',
@@ -179,21 +117,12 @@ export class OrganizationsService {
       throw new NotFoundException(id);
     }
 
-    const updatedOrganiation = await this.prisma.organization.update({
-      where: {
-        id,
-        deletedAt: null,
-      },
-      data: {
-        deletedBy,
-        deletedAt: new Date(),
-      },
+    const updatedOrganiation = await this.organizationsRepository.update(id, {
+      deletedBy,
+      deletedAt: new Date(),
     });
 
-    await this.cacheService.del(`Organization-${updatedOrganiation.id}`);
-    this.logger.debug(
-      `Organization-${updatedOrganiation.id} removed from cache`,
-    );
+    await this.organizationsCache.set(updatedOrganiation);
 
     this.eventsService.emitEvent({
       entity: 'Organization',
