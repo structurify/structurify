@@ -1,10 +1,6 @@
-import { Injectable, Inject, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Member } from '@prisma/client';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 
-import { PrismaService } from '@providers/db/prisma/services/prisma.service';
-import { EventsService } from '@modules/events/services';
 import {
   CreateMemberDto,
   DeleteMemberDto,
@@ -15,124 +11,68 @@ import {
   MemberDeletedEvent,
   MemberUpdatedEvent,
 } from '@contracts/organizations';
-import { EventAction } from '@app/contracts/events';
+import { EventAction } from '@contracts/events';
+import { EventsService } from '@modules/events';
+
+import { MembersCache } from '../caches';
+import { MembersRepository } from '../repositories';
 
 @Injectable()
 export class MembersService {
   private readonly logger = new Logger(MembersService.name);
 
   constructor(
-    @Inject(CACHE_MANAGER) private cacheService: Cache,
-    private readonly prisma: PrismaService,
     private readonly eventsService: EventsService,
+    private readonly membersCache: MembersCache,
+    private readonly membersRepository: MembersRepository,
   ) {}
 
   async findOne(
     organizationId: string,
     userId: string,
   ): Promise<Member | null> {
-    const cachedData = await this.cacheService.get<Member>(
-      `Organization-${organizationId}/User-${userId}`,
+    const cachedData = await this.membersCache.findOneById(
+      organizationId,
+      userId,
     );
     if (cachedData) {
-      this.logger.debug(
-        `Organization-${organizationId}/User-${userId} found in cache`,
-      );
       return cachedData;
     }
 
-    const member = await this.prisma.member.findUnique({
-      where: {
-        userId_organizationId: {
-          userId,
-          organizationId,
-        },
-        deletedAt: null,
-      },
-    });
-
+    const member = await this.membersRepository.findOne(organizationId, userId);
     if (!!member) {
-      await this.cacheService.set(
-        `Organization-${organizationId}/User-${userId}`,
-        member,
-      );
-      this.logger.debug(
-        `Organization-${organizationId}/User-${userId} stored in cache`,
-      );
+      await this.membersCache.set(member);
     }
 
     return member;
   }
 
-  async findAll({
-    organizationId,
-    ...args
-  }: MembersArgs): Promise<[Member[], number]> {
-    return Promise.all([
-      this.prisma.member.findMany({
-        ...args,
-        where: {
-          organizationId,
-          deletedAt: null,
-        },
-      }),
-      this.prisma.member.count({
-        ...args,
-        where: {
-          organizationId,
-          deletedAt: null,
-        },
-      }),
-    ]);
+  async findAll(args: MembersArgs): Promise<[Member[], number]> {
+    return this.membersRepository.findAll(args);
   }
 
   async findPrimaryOwner(organizationId: string): Promise<Member | null> {
-    const cachedData = await this.cacheService.get<Member>(
-      `Organization-${organizationId}/PrimaryOwner`,
-    );
+    const cachedData = await this.membersCache.findPrimaryOwner(organizationId);
     if (cachedData) {
-      this.logger.debug(
-        `Organization-${organizationId}/PrimaryOwner found in cache`,
-      );
       return cachedData;
     }
 
-    const member = await this.prisma.member.findFirst({
-      where: {
-        organizationId,
-        isOwner: true,
-        deletedAt: null,
-      },
-    });
-
+    const member =
+      await this.membersRepository.findPrimaryOwner(organizationId);
     if (!!member) {
-      await this.cacheService.set(
-        `Organization-${organizationId}/PrimaryOwner`,
-        member,
-      );
-      this.logger.debug(
-        `Organization-${organizationId}/PrimaryOwner stored in cache`,
-      );
+      await this.membersCache.set(member);
     }
 
     return member;
   }
 
   async create(input: CreateMemberDto): Promise<Member> {
-    const member = await this.prisma.member.create({
-      data: {
-        ...input,
-        updatedBy: input.createdBy,
-      },
+    const member = await this.membersRepository.create({
+      ...input,
+      updatedBy: input.createdBy,
     });
 
-    await this.cacheService.set(
-      `Organization-${member.organizationId}/User-${member.userId}`,
-      member,
-    );
-    this.logger.debug(
-      `Organization-${member.organizationId}/User-${member.userId} stored in cache`,
-    );
+    await this.membersCache.set(member);
 
     this.eventsService.emitEvent({
       entity: 'Member',
@@ -154,26 +94,13 @@ export class MembersService {
       throw new NotFoundException(`${organizationId}/${userId}`);
     }
 
-    const updatedMember = await this.prisma.member.update({
-      where: {
-        userId_organizationId: {
-          userId,
-          organizationId,
-        },
-        deletedAt: null,
-      },
-      data: {
-        ...rest,
-      },
-    });
+    const updatedMember = await this.membersRepository.update(
+      userId,
+      organizationId,
+      rest,
+    );
 
-    await this.cacheService.set(
-      `Organization-${updatedMember.organizationId}/User-${updatedMember.userId}`,
-      updatedMember,
-    );
-    this.logger.debug(
-      `Organization-${updatedMember.organizationId}/User-${updatedMember.userId} updated in cache`,
-    );
+    await this.membersCache.set(updatedMember);
 
     this.eventsService.emitEvent({
       entity: 'Member',
@@ -196,25 +123,18 @@ export class MembersService {
       throw new NotFoundException(`${organizationId}/${userId}`);
     }
 
-    const updatedMember = await this.prisma.member.update({
-      where: {
-        userId_organizationId: {
-          userId,
-          organizationId,
-        },
-        deletedAt: null,
-      },
-      data: {
+    const updatedMember = await this.membersRepository.update(
+      userId,
+      organizationId,
+      {
         deletedBy,
         deletedAt: new Date(),
       },
-    });
-
-    await this.cacheService.del(
-      `Organization-${updatedMember.organizationId}/User-${updatedMember.userId}`,
     );
-    this.logger.debug(
-      `Organization-${updatedMember.organizationId}/User-${updatedMember.userId} deleted from cache`,
+
+    await this.membersCache.delete(
+      updatedMember.organizationId,
+      updatedMember.userId,
     );
 
     this.eventsService.emitEvent({

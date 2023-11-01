@@ -23,6 +23,20 @@ export class MembersCache {
     return entry;
   }
 
+  async findPrimaryOwner(organizationId: string) {
+    const entry = await this.cacheService.get<Member>(
+      `Organization-${organizationId}/PrimaryOwner`,
+    );
+
+    if (!!entry) {
+      this.logger.debug(
+        `Organization-${organizationId}/PrimaryOwner found in cache`,
+      );
+    }
+
+    return entry;
+  }
+
   async set(member: Member) {
     await this.cacheService.set(
       `Organization-${member.organizationId}/User-${member.userId}`,
