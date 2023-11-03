@@ -6,6 +6,29 @@ input AcceptInviteInput {
   token: String!
 }
 
+"""ApiKey"""
+type ApiKey {
+  accessKey: String!
+  createdAt: Date!
+  createdBy: ServiceRole!
+  deletedAt: Date
+  deletedBy: ServiceRole
+  expiresAt: Date
+  id: ID!
+  name: String
+  project: Project!
+  projectId: String!
+  secretKey: String!
+  updatedAt: Date!
+  updatedBy: ServiceRole!
+}
+
+"""ApiKeys"""
+type ApiKeysResponse {
+  items: [ApiKey!]
+  meta: PageMeta
+}
+
 """Auth response"""
 type AuthResponse {
   accessToken: String!
@@ -15,6 +38,13 @@ type AuthResponse {
 
 input CancelInviteInput {
   id: ID!
+}
+
+input CreateApiKeyInput {
+  expiresAt: Date
+  metadata: JSON
+  name: String
+  projectId: String!
 }
 
 input CreateOrganizationInput {
@@ -30,6 +60,10 @@ input CreateProjectInput {
 
 """Date custom scalar type"""
 scalar Date
+
+input DeleteApiKeyInput {
+  id: ID!
+}
 
 input DeleteMemberInput {
   organizationId: String!
@@ -129,6 +163,9 @@ type MembersResponse {
 }
 
 type Mutation {
+  apiKeyCreate(input: CreateApiKeyInput!): ApiKey!
+  apiKeyDelete(input: DeleteApiKeyInput!): ApiKey!
+  apiKeyUpdate(input: UpdateApiKeyInput!): ApiKey!
   forgotPassword(input: ForgotPasswordInput!): ForgotPasswordResponse!
   inviteAccept(input: AcceptInviteInput!): Invite!
   inviteCancel(input: CancelInviteInput!): Invite!
@@ -204,6 +241,8 @@ type ProjectsResponse {
 }
 
 type Query {
+  apiKey(id: String!): ApiKey
+  apiKeys(projectId: ID!, skip: Int! = 0, take: Int! = 10): ApiKeysResponse!
   invite(id: String!): Invite
   invites(organizationId: ID!, skip: Int! = 0, take: Int! = 10): InvitesResponse!
   me: User!
@@ -259,6 +298,12 @@ input SignUpInput {
 input TransferProjectInput {
   id: ID!
   newOrganizationId: String!
+}
+
+input UpdateApiKeyInput {
+  id: ID!
+  metadata: JSON
+  name: String
 }
 
 input UpdateMemberInput {

@@ -4,14 +4,18 @@ import { CoreModule } from '@modules/core';
 import { PlatformCaslModule } from '@modules/platform-casl';
 import { OrganizationsModule } from '@modules/organizations';
 
-import { ProjectsService } from './services';
-import { ProjectResolver } from './resolvers';
-import { ProjectsRepository } from './repositories';
-import { ProjectsCache } from './caches';
+import { ProjectsService, ApiKeysService } from './services';
+import { ProjectResolver, ApiKeyResolver } from './resolvers';
+import { ProjectsRepository, ApiKeysRepository } from './repositories';
+import { ProjectsCache, ApiKeysCache } from './caches';
 
 @Module({
   imports: [CoreModule, OrganizationsModule, PlatformCaslModule],
   providers: [
+    ApiKeysService,
+    ApiKeyResolver,
+    ApiKeysRepository,
+    ApiKeysCache,
     ProjectsService,
     ProjectResolver,
     ProjectsRepository,

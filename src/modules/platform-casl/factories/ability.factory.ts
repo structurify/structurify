@@ -9,6 +9,7 @@ import {
   Organization,
   Member,
   MemberRole,
+  ApiKey,
 } from '@prisma/client';
 import { Action } from '@contracts/casl';
 
@@ -20,6 +21,7 @@ type AppSubjects =
       Project: Project;
       Organization: Organization;
       Member: Member;
+      ApiKey: ApiKey;
     }>;
 
 export type AppAbility = PureAbility<[string, AppSubjects], PrismaQuery>;
@@ -51,6 +53,11 @@ export class PlatformCaslAbilityFactory {
       can(Action.Manage, 'Project', { organizationId: member.organizationId });
       can(Action.Manage, 'Invite', { organizationId: member.organizationId });
       can(Action.Manage, 'Member', { organizationId: member.organizationId });
+      can(Action.Manage, 'ApiKey', {
+        project: {
+          organizationId: member.organizationId,
+        },
+      });
     }
 
     if (member.role === MemberRole.ADMINISTRATOR) {
@@ -59,6 +66,11 @@ export class PlatformCaslAbilityFactory {
       can(Action.Manage, 'Project', { organizationId: member.organizationId });
       can(Action.Manage, 'Invite', { organizationId: member.organizationId });
       can(Action.Manage, 'Member', { organizationId: member.organizationId });
+      can(Action.Manage, 'ApiKey', {
+        project: {
+          organizationId: member.organizationId,
+        },
+      });
 
       cannot(Action.Delete, 'Member', {
         organizationId: member.organizationId,
@@ -80,6 +92,11 @@ export class PlatformCaslAbilityFactory {
       can(Action.Read, 'Project', { organizationId: member.organizationId });
       can(Action.Read, 'Member', { organizationId: member.organizationId });
       can(Action.Read, 'Invite', { organizationId: member.organizationId });
+      can(Action.Read, 'ApiKey', {
+        project: {
+          organizationId: member.organizationId,
+        },
+      });
     }
 
     return build({
