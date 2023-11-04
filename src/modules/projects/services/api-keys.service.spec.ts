@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 
 import { EventsService } from '@modules/events';
 
@@ -13,9 +14,10 @@ describe('ApiKeysService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ApiKeysService,
-        { provide: EventsService, useValue: {} },
         { provide: ApiKeysRepository, useValue: {} },
         { provide: ApiKeysCache, useValue: {} },
+        { provide: ConfigService, useValue: {} },
+        { provide: EventsService, useValue: {} },
       ],
     }).compile();
 

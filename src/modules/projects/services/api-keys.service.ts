@@ -1,6 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ApiKey } from '@prisma/client';
 import crypto from 'crypto';
+import { ConfigService } from '@nestjs/config';
 
 import { EventsService } from '@modules/events/services';
 import {
@@ -24,9 +25,10 @@ export class ApiKeysService {
   private readonly logger = new Logger(ApiKeysService.name);
 
   constructor(
-    private readonly eventsService: EventsService,
     private readonly apiKeysCache: ApiKeysCache,
     private readonly apiKeysRepository: ApiKeysRepository,
+    private readonly configService: ConfigService,
+    private readonly eventsService: EventsService,
   ) {}
 
   async findOneById(id: string): Promise<ApiKey | null> {
@@ -52,7 +54,10 @@ export class ApiKeysService {
     const secretKeyBase = generateRandomString(64);
 
     const hmac = crypto
-      .createHmac('sha256', 'xyz')
+      .createHmac(
+        'sha256',
+        this.configService.getOrThrow<string>('SECRET_KEY_SECRET'),
+      )
       .update(secretKeyBase)
       .digest('hex');
 
