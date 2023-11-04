@@ -15,7 +15,7 @@ export class UserListener {
   ) {}
 
   @OnEvent(UserEvents.USER_CREATED)
-  async handleOrderCreatedEvent(event: UserCreatedEvent) {
+  async handleUserCreatedEvent(event: UserCreatedEvent) {
     const name = `${event.after!.username}'s Org`;
     const organization = await this.organizationsService.create({
       name,
