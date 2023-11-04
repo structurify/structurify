@@ -1,6 +1,6 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { ApiKey } from '@prisma/client';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 
 import { EventsService } from '@modules/events/services';
@@ -23,6 +23,7 @@ import { ApiKeysCache } from '../caches';
 @Injectable()
 export class ApiKeysService {
   private readonly logger = new Logger(ApiKeysService.name);
+  private readonly hmacAlgorithm = 'sha256';
 
   constructor(
     private readonly apiKeysCache: ApiKeysCache,
@@ -30,6 +31,10 @@ export class ApiKeysService {
     private readonly configService: ConfigService,
     private readonly eventsService: EventsService,
   ) {}
+
+  static entityId(entry: ApiKey): string {
+    return `Project-${entry.projectId}/ApiKey-${entry.id}`;
+  }
 
   async findOneById(id: string): Promise<ApiKey | null> {
     const cachedData = await this.apiKeysCache.findOneById(id);
@@ -55,7 +60,7 @@ export class ApiKeysService {
 
     const hmac = crypto
       .createHmac(
-        'sha256',
+        this.hmacAlgorithm,
         this.configService.getOrThrow<string>('SECRET_KEY_SECRET'),
       )
       .update(secretKeyBase)
@@ -72,7 +77,7 @@ export class ApiKeysService {
 
     this.eventsService.emitEvent({
       entity: 'ApiKey',
-      entityId: `Project-${apiKey.projectId}/ApiKey-${apiKey.id}`,
+      entityId: ApiKeysService.entityId(apiKey),
       eventName: ProjectEvents.API_KEY_CREATED,
       event: new ApiKeyCreatedEvent(),
       action: EventAction.CREATE,
@@ -99,7 +104,7 @@ export class ApiKeysService {
 
     this.eventsService.emitEvent({
       entity: 'ApiKey',
-      entityId: `Project-${apiKey.projectId}/ApiKey-${apiKey.id}`,
+      entityId: ApiKeysService.entityId(apiKey),
       eventName: ProjectEvents.API_KEY_UPDATED,
       event: new ApiKeyUpdatedEvent(),
       action: EventAction.UPDATE,
@@ -127,7 +132,7 @@ export class ApiKeysService {
 
     this.eventsService.emitEvent({
       entity: 'ApiKey',
-      entityId: `Project-${apiKey.projectId}/ApiKey-${apiKey.id}`,
+      entityId: ApiKeysService.entityId(apiKey),
       eventName: ProjectEvents.API_KEY_DELETED,
       event: new ApiKeyDeletedEvent(),
       action: EventAction.DELETE,
