@@ -1,4 +1,4 @@
-type GenerateRandomStringParams = {
+export type GenerateRandomStringParams = {
   lowercase?: boolean;
   uppercase?: boolean;
   number?: boolean;
@@ -7,31 +7,32 @@ type GenerateRandomStringParams = {
 
 export const generateRandomString = (
   length = 32,
-  params: GenerateRandomStringParams = {
-    lowercase: true,
-    uppercase: false,
-    number: true,
-    special: false,
-  },
+  {
+    lowercase = true,
+    uppercase = false,
+    number = true,
+    special = false,
+  }: GenerateRandomStringParams = {},
 ) => {
-  const { lowercase, uppercase, number, special } = params;
-  if (!lowercase && !uppercase && !number && !special) {
+  const charSets = {
+    lower: 'abcdefghijklmnopqrstuvwxyz',
+    upper: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+    num: '0123456789',
+    spec: '!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~',
+  };
+
+  const allChars =
+    `${lowercase ? charSets.lower : ''}` +
+    `${uppercase ? charSets.upper : ''}` +
+    `${number ? charSets.num : ''}` +
+    `${special ? charSets.spec : ''}`;
+
+  if (!allChars.length) {
     throw new Error('DEV ERROR - provide at least one true param');
   }
 
-  const lower = 'abcdefghijklmnopqrstuvwxyz';
-  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const num = '0123456789';
-  const spec = '!"#$%&\'()*+,-./:;<=>?@[]^_`{|}~';
-
-  const s = [
-    lowercase ? lower : '',
-    uppercase ? upper : '',
-    number ? num : '',
-    special ? spec : '',
-  ].join('');
-
-  const pickRandom = () => s[Math.floor(Math.random() * s.length)];
+  const pickRandom = () =>
+    allChars[Math.floor(Math.random() * allChars.length)];
 
   return Array.from({ length }, pickRandom).join('');
 };
