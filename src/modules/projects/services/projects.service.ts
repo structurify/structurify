@@ -21,6 +21,10 @@ import { ProjectsCache } from '../caches';
 export class ProjectsService {
   private readonly logger = new Logger(ProjectsService.name);
 
+  static entityId(entry: Project): string {
+    return `Organization-${entry.organizationId}/Project-${entry.id}`;
+  }
+
   constructor(
     private readonly eventsService: EventsService,
     private readonly projectsCache: ProjectsCache,
@@ -52,7 +56,7 @@ export class ProjectsService {
 
     this.eventsService.emitEvent({
       entity: 'Project',
-      entityId: `Organization-${project.organizationId}/Project-${project.id}`,
+      entityId: ProjectsService.entityId(project),
       eventName: ProjectEvents.PROJECT_CREATED,
       event: new ProjectCreatedEvent(),
       action: EventAction.CREATE,
@@ -76,7 +80,7 @@ export class ProjectsService {
 
     this.eventsService.emitEvent({
       entity: 'Project',
-      entityId: `Organization-${project.organizationId}/Project-${project.id}`,
+      entityId: ProjectsService.entityId(project),
       eventName: ProjectEvents.PROJECT_UPDATED,
       event: new ProjectUpdatedEvent(),
       action: EventAction.UPDATE,
@@ -101,7 +105,7 @@ export class ProjectsService {
 
     this.eventsService.emitEvent({
       entity: 'Project',
-      entityId: `Organization-${project.organizationId}/Project-${project.id}`,
+      entityId: ProjectsService.entityId(project),
       eventName: ProjectEvents.PROJECT_DELETED,
       event: new ProjectDeletedEvent(),
       action: EventAction.DELETE,

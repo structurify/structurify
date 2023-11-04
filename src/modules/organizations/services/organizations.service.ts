@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, Inject } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Organization } from '@prisma/client';
 import { generate } from 'generate-password';
 
@@ -28,6 +28,10 @@ export class OrganizationsService {
     private readonly organizationsCache: OrganizationsCache,
     private readonly organizationsRepository: OrganizationsRepository,
   ) {}
+
+  static entityId(entry: Organization): string {
+    return `Organization-${entry.id}`;
+  }
 
   async findOneById(id: string): Promise<Organization | null> {
     const cachedData = await this.organizationsCache.findOneById(id);
@@ -71,7 +75,7 @@ export class OrganizationsService {
 
     this.eventsService.emitEvent({
       entity: 'Organization',
-      entityId: `Organization-${organization.id}`,
+      entityId: OrganizationsService.entityId(organization),
       eventName: OrganizationEvents.ORGANIZATION_CREATED,
       event: new OrganizationCreatedEvent(),
       action: EventAction.CREATE,
@@ -98,7 +102,7 @@ export class OrganizationsService {
 
     this.eventsService.emitEvent({
       entity: 'Organization',
-      entityId: `Organization-${organization.id}`,
+      entityId: OrganizationsService.entityId(organization),
       eventName: OrganizationEvents.ORGANIZATION_UPDATED,
       event: new OrganizationUpdatedEvent(),
       action: EventAction.UPDATE,
@@ -126,7 +130,7 @@ export class OrganizationsService {
 
     this.eventsService.emitEvent({
       entity: 'Organization',
-      entityId: `Organization-${organization.id}`,
+      entityId: OrganizationsService.entityId(organization),
       eventName: OrganizationEvents.ORGANIZATION_DELETED,
       event: new OrganizationDeletedEvent(),
       action: EventAction.DELETE,

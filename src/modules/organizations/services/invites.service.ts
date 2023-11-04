@@ -51,6 +51,10 @@ export class InvitesService {
     private readonly usersService: UsersService,
   ) {}
 
+  static entityId(entry: Invite): string {
+    return `Organization-${entry.organizationId}/Invite-${entry.id}`;
+  }
+
   async findOneById(id: string): Promise<Invite | null> {
     const cachedData = await this.invitesCache.findOneById(id);
     if (cachedData) {
@@ -155,7 +159,7 @@ export class InvitesService {
 
     this.eventsService.emitEvent({
       entity: 'Invite',
-      entityId: `Organization-${invite.organizationId}/Invite-${invite.id}`,
+      entityId: InvitesService.entityId(invite),
       eventName: OrganizationEvents.INVITE_CREATED,
       event: new InviteCreatedEvent(),
       action: EventAction.CREATE,
@@ -233,7 +237,7 @@ export class InvitesService {
 
     this.eventsService.emitEvent({
       entity: 'Invite',
-      entityId: `Organization-${invite.organizationId}/Invite-${invite.id}`,
+      entityId: InvitesService.entityId(invite),
       eventName: OrganizationEvents.INVITE_RESENDED,
       event: new InviteResendedEvent(),
       action: EventAction.UPDATE,
@@ -242,7 +246,7 @@ export class InvitesService {
     });
     this.eventsService.emitEvent({
       entity: 'Invite',
-      entityId: `Organization-${invite.organizationId}/Invite-${invite.id}`,
+      entityId: InvitesService.entityId(invite),
       eventName: OrganizationEvents.INVITE_UPDATED,
       event: new InviteUpdatedEvent(),
       action: EventAction.UPDATE,
@@ -258,8 +262,8 @@ export class InvitesService {
       dto,
     });
 
-    const invitation = await this.findOneById(dto.id);
-    if (!invitation) {
+    const invite = await this.findOneById(dto.id);
+    if (!invite) {
       throw new NotFoundException(dto.id);
     }
 
@@ -277,11 +281,11 @@ export class InvitesService {
 
     this.eventsService.emitEvent({
       entity: 'Invite',
-      entityId: `Organization-${invitation.organizationId}/Invite-${invitation.id}`,
+      entityId: InvitesService.entityId(invite),
       eventName: OrganizationEvents.INVITE_DELETED,
       event: new InviteDeletedEvent(),
       action: EventAction.DELETE,
-      before: invitation,
+      before: invite,
       after: updatedInvite,
     });
 
@@ -293,12 +297,12 @@ export class InvitesService {
       dto,
     });
 
-    const invitation = await this.findOneByToken(dto.token);
-    if (!invitation) {
+    const invite = await this.findOneByToken(dto.token);
+    if (!invite) {
       throw new NotFoundException(dto.token);
     }
 
-    if (invitation.status === InviteStatus.ACCEPTED) {
+    if (invite.status === InviteStatus.ACCEPTED) {
       throw new BadRequestException(
         this.i18n.translate(
           'organizations.invitations.errors.already-accepted',
@@ -306,28 +310,28 @@ export class InvitesService {
       );
     }
 
-    if (invitation.status === InviteStatus.DECLINED) {
+    if (invite.status === InviteStatus.DECLINED) {
       throw new BadRequestException(
         this.i18n.translate('organizations.invitations.errors.declined'),
       );
     }
 
     if (
-      invitation.status === InviteStatus.EXPIRED ||
-      dayjs().isAfter(invitation.expiresAt)
+      invite.status === InviteStatus.EXPIRED ||
+      dayjs().isAfter(invite.expiresAt)
     ) {
       throw new BadRequestException(
         this.i18n.translate('organizations.invitations.errors.expired'),
       );
     }
 
-    if (invitation.status === InviteStatus.CANCELLED) {
+    if (invite.status === InviteStatus.CANCELLED) {
       throw new BadRequestException(
         this.i18n.translate('organizations.invitations.errors.cancelled'),
       );
     }
 
-    const updatedInvite = await this.invitesRepository.update(invitation.id, {
+    const updatedInvite = await this.invitesRepository.update(invite.id, {
       status: InviteStatus.ACCEPTED,
       updatedBy: dto.updatedBy,
     });
@@ -340,11 +344,11 @@ export class InvitesService {
 
     this.eventsService.emitEvent({
       entity: 'Invite',
-      entityId: `Organization-${invitation.organizationId}/Invite-${invitation.id}`,
+      entityId: InvitesService.entityId(invite),
       eventName: OrganizationEvents.INVITE_UPDATED,
       event: new InviteUpdatedEvent(),
       action: EventAction.UPDATE,
-      before: invitation,
+      before: invite,
       after: updatedInvite,
     });
 
@@ -356,8 +360,8 @@ export class InvitesService {
       dto,
     });
 
-    const invitation = await this.findOneById(dto.id);
-    if (!invitation) {
+    const invite = await this.findOneById(dto.id);
+    if (!invite) {
       throw new NotFoundException(dto.id);
     }
 
@@ -374,21 +378,21 @@ export class InvitesService {
 
     this.eventsService.emitEvent({
       entity: 'Invite',
-      entityId: `Organization-${invitation.organizationId}/Invite-${invitation.id}`,
+      entityId: InvitesService.entityId(invite),
       eventName: OrganizationEvents.INVITE_UPDATED,
       event: new InviteUpdatedEvent(),
       action: EventAction.UPDATE,
-      before: invitation,
+      before: invite,
       after: updatedInvite,
     });
 
     this.eventsService.emitEvent({
       entity: 'Invite',
-      entityId: `Organization-${invitation.organizationId}/Invite-${invitation.id}`,
+      entityId: InvitesService.entityId(invite),
       eventName: OrganizationEvents.INVITE_EXPIRED,
       event: new InviteExpiredEvent(),
       action: EventAction.UPDATE,
-      before: invitation,
+      before: invite,
       after: updatedInvite,
     });
 

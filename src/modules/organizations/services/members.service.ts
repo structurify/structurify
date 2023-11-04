@@ -27,6 +27,10 @@ export class MembersService {
     private readonly membersRepository: MembersRepository,
   ) {}
 
+  static entityId(entry: Member): string {
+    return `Organization-${entry.organizationId}/User-${entry.userId}`;
+  }
+
   async findOne(
     organizationId: string,
     userId: string,
@@ -76,7 +80,7 @@ export class MembersService {
 
     this.eventsService.emitEvent({
       entity: 'Member',
-      entityId: `Organization-${member.organizationId}/User-${member.userId}`,
+      entityId: MembersService.entityId(member),
       eventName: OrganizationEvents.MEMBER_CREATED,
       event: new MemberCreatedEvent(),
       action: EventAction.CREATE,
@@ -104,7 +108,7 @@ export class MembersService {
 
     this.eventsService.emitEvent({
       entity: 'Member',
-      entityId: `Organization-${member.organizationId}/User-${member.userId}`,
+      entityId: MembersService.entityId(member),
       eventName: OrganizationEvents.MEMBER_UPDATED,
       event: new MemberUpdatedEvent(),
       action: EventAction.UPDATE,
@@ -139,7 +143,7 @@ export class MembersService {
 
     this.eventsService.emitEvent({
       entity: 'Member',
-      entityId: `Organization-${member.organizationId}/User-${member.userId}`,
+      entityId: MembersService.entityId(member),
       eventName: OrganizationEvents.MEMBER_DELETED,
       event: new MemberDeletedEvent(),
       action: EventAction.DELETE,

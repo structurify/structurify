@@ -32,6 +32,10 @@ export class UsersService {
     private readonly i18nService: I18nService,
   ) {}
 
+  static entityId(entry: User): string {
+    return `User-${entry.id}`;
+  }
+
   async findOneById(id: string): Promise<User | null> {
     const cachedData = await this.usersCache.findOneById(id);
     if (cachedData) {
@@ -85,7 +89,7 @@ export class UsersService {
 
     this.eventsService.emitEvent({
       entity: 'User',
-      entityId: `User-${user.id}`,
+      entityId: UsersService.entityId(user),
       eventName: UserEvents.USER_CREATED,
       event: new UserCreatedEvent(),
       action: EventAction.CREATE,
@@ -109,7 +113,7 @@ export class UsersService {
 
     this.eventsService.emitEvent({
       entity: 'User',
-      entityId: `User-${user.id}`,
+      entityId: UsersService.entityId(user),
       eventName: UserEvents.USER_UPDATED,
       event: new UserUpdatedEvent(),
       action: EventAction.UPDATE,
@@ -149,7 +153,7 @@ export class UsersService {
 
     this.eventsService.emitEvent({
       entity: 'User',
-      entityId: `User-${user.id}`,
+      entityId: UsersService.entityId(user),
       eventName: UserEvents.USER_UPDATED,
       event: new UserUpdatedEvent(),
       action: EventAction.UPDATE,
@@ -174,7 +178,7 @@ export class UsersService {
 
     this.eventsService.emitEvent({
       entity: 'User',
-      entityId: `User-${user.id}`,
+      entityId: UsersService.entityId(user),
       eventName: UserEvents.USER_DELETED,
       event: new UserDeletedEvent(),
       action: EventAction.DELETE,
