@@ -8,6 +8,7 @@ import { ProjectsService, ApiKeysService } from './services';
 import { ProjectResolver, ApiKeyResolver } from './resolvers';
 import { ProjectsRepository, ApiKeysRepository } from './repositories';
 import { ProjectsCache, ApiKeysCache } from './caches';
+import { ProjectsListener } from './listeners';
 
 @Module({
   imports: [CoreModule, OrganizationsModule, PlatformCaslModule],
@@ -16,10 +17,11 @@ import { ProjectsCache, ApiKeysCache } from './caches';
     ApiKeyResolver,
     ApiKeysRepository,
     ApiKeysCache,
+    ProjectsCache,
+    ProjectsListener,
     ProjectsService,
     ProjectResolver,
     ProjectsRepository,
-    ProjectsCache,
   ],
   exports: [ProjectsService, ProjectsRepository, ProjectsCache],
 })
