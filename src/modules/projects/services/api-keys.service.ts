@@ -55,8 +55,13 @@ export class ApiKeysService {
   }
 
   async create(dto: CreateApiKeyDto): Promise<ApiKey> {
-    const accessKey = generateRandomString();
-    const secretKeyBase = generateRandomString(64);
+    const accessKey = generateRandomString(32);
+    const secretKeyBase = generateRandomString(64, {
+      lowercase: true,
+      uppercase: true,
+      special: false,
+      number: true,
+    });
 
     const hmac = crypto
       .createHmac(
