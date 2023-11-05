@@ -45,5 +45,5 @@ lerna-debug.log*
 .yarn/unplugged/*
 
 # Infra
-infra/postgresql
+infra/postgresql/writer-data
 infra/meilisearch/data.ms

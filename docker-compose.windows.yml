@@ -22,10 +22,7 @@ services:
     restart: always
     user: root
     environment:
-      - POSTGRESQL_USERNAME=structurify
-      - POSTGRESQL_PASSWORD=structurify
-      - POSTGRESQL_DATABASE=structurify
-      - POSTGRESQL_POSTGRES_PASSWORD=root
+      - POSTGRESQL_PASSWORD=root
       - POSTGRESQL_REPLICATION_MODE=master
       - POSTGRESQL_REPLICATION_USER=replicator
       - POSTGRESQL_REPLICATION_PASSWORD=password
@@ -36,8 +33,12 @@ services:
       retries: 3
     volumes:
       - ./infra/postgresql/writer-data:/bitnami/postgresql
+      - ./infra/postgresql/init:/docker-entrypoint-initdb.d/
     ports:
       - '6432:5432'
+    networks:
+      - app-tier
+
   postgres-reader:
     image: bitnami/postgresql:16
     restart: always
@@ -57,6 +58,31 @@ services:
       retries: 3
     ports:
       - '6433:5432'
+    networks:
+      - app-tier
+
+  gotrue:
+    image: supabase/gotrue:v2.107.0
+    restart: unless-stopped
+    depends_on:
+      - postgres-writer
+    ports:
+      - '9999:9999'
+      - '9100:9100'
+    environment:
+      - GOTRUE_SITE_URL=http://localhost:8000
+      - GOTRUE_JWT_SECRET=6fd43811-9d30-4c6e-8628-1cb49449a9a6
+      - GOTRUE_JWT_EXP=3600
+      - GOTRUE_OPERATOR_TOKEN=structurify
+      - GOTRUE_DB_MIGRATIONS_PATH=/go/src/github.com/supabase/gotrue/migrations
+      - GOTRUE_DB_DRIVER=postgres
+      - DATABASE_URL=postgres://gotrue:gotrue@postgres-writer:5432/gotrue
+      - GOTRUE_API_HOST=0.0.0.0
+      - GOTRUE_LOG_FILE=/var/log/go/gotrue.log
+      - API_EXTERNAL_URL=http://localhost:9999
+      - PORT=9999
+    networks:
+      - app-tier
 
   cache:
     image: redis
@@ -66,6 +92,8 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
       - cache:/data
+    networks:
+      - app-tier
 
   minio1:
     <<: *minio-common
@@ -73,6 +101,8 @@ services:
     volumes:
       - data1-1:/data1
       - data1-2:/data2
+    networks:
+      - app-tier
 
   minio2:
     <<: *minio-common
@@ -80,6 +110,8 @@ services:
     volumes:
       - data2-1:/data1
       - data2-2:/data2
+    networks:
+      - app-tier
 
   tracing:
     image: jaegertracing/all-in-one:latest
@@ -94,18 +126,22 @@ services:
       - 14268:14268
       - 14269:14269
       - 9411:9411
+    networks:
+      - app-tier
 
   nginx:
     image: nginx:1.19.2-alpine
     hostname: nginx
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
     ports:
       - '9000:9000'
       - '9001:9001'
     depends_on:
       - minio1
       - minio2
+    networks:
+      - app-tier
 
   mailhog:
     image: mailhog/mailhog
@@ -121,6 +157,8 @@ services:
       MH_STORAGE: maildir
     volumes:
       - ./infra/mailhog/data:/maildir
+    networks:
+      - app-tier
 
   meilisearch:
     image: getmeili/meilisearch
@@ -137,6 +175,8 @@ services:
     volumes:
       - ./infra/meilisearch/data.ms:/data.ms
     restart: unless-stopped
+    networks:
+      - app-tier
 
 volumes:
   cache:
@@ -144,3 +184,7 @@ volumes:
   data1-2:
   data2-1:
   data2-2:
+
+networks:
+  app-tier:
+    driver: bridge
