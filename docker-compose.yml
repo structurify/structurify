@@ -22,8 +22,6 @@ services:
     restart: always
     ports:
       - 8080:8080
-    networks:
-      - app-tier
 
   postgres-writer:
     image: bitnami/postgresql:16
@@ -43,8 +41,6 @@ services:
       - ./infra/postgresql/init:/docker-entrypoint-initdb.d/
     ports:
       - '6432:5432'
-    networks:
-      - app-tier
 
   postgres-reader:
     image: bitnami/postgresql:16
@@ -65,8 +61,6 @@ services:
       retries: 3
     ports:
       - '6433:5432'
-    networks:
-      - app-tier
 
   gotrue:
     image: supabase/gotrue:v2.107.0
@@ -88,11 +82,13 @@ services:
       - GOTRUE_OPERATOR_TOKEN=structurify
       - GOTRUE_LOG_FILE=/var/log/go/gotrue.log
       - PORT=9999
-      - WEBHOOK_URL=http://localhost:3000/webhooks/gotrue
-      - WEBHOOK_SECRET=structurify
-      - WEBHOOK_EVENTS=validate,signup,login
-    networks:
-      - app-tier
+      - GOTRUE_WEBHOOK_URL=http://host.docker.internal:3000/webhooks/gotrue/
+      - GOTRUE_WEBHOOK_SECRET=structurify
+      - GOTRUE_WEBHOOK_EVENTS=validate,signup,login
+      - GOTRUE_WEBHOOK_RETRIES=10
+      - GOTRUE_WEBHOOK_TIMEOUT_SEC=30
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
   cache:
     image: redis
@@ -102,8 +98,6 @@ services:
     command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
     volumes:
       - cache:/data
-    networks:
-      - app-tier
 
   minio1:
     <<: *minio-common
@@ -111,8 +105,6 @@ services:
     volumes:
       - data1-1:/data1
       - data1-2:/data2
-    networks:
-      - app-tier
 
   minio2:
     <<: *minio-common
@@ -120,8 +112,6 @@ services:
     volumes:
       - data2-1:/data1
       - data2-2:/data2
-    networks:
-      - app-tier
 
   tracing:
     image: jaegertracing/all-in-one:latest
@@ -136,8 +126,6 @@ services:
       - 14268:14268
       - 14269:14269
       - 9411:9411
-    networks:
-      - app-tier
 
   nginx:
     image: nginx:1.19.2-alpine
@@ -150,8 +138,6 @@ services:
     depends_on:
       - minio1
       - minio2
-    networks:
-      - app-tier
 
   mailhog:
     image: mailhog/mailhog
@@ -167,8 +153,6 @@ services:
       MH_STORAGE: maildir
     volumes:
       - ./infra/mailhog/data:/maildir
-    networks:
-      - app-tier
 
   meilisearch:
     image: getmeili/meilisearch
@@ -185,8 +169,6 @@ services:
     volumes:
       - ./infra/meilisearch/data.ms:/data.ms
     restart: unless-stopped
-    networks:
-      - app-tier
 
 volumes:
   cache:
@@ -194,7 +176,3 @@ volumes:
   data1-2:
   data2-1:
   data2-2:
-
-networks:
-  app-tier:
-    driver: bridge

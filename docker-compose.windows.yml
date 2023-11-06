@@ -81,9 +81,11 @@ services:
       - GOTRUE_OPERATOR_TOKEN=structurify
       - GOTRUE_LOG_FILE=/var/log/go/gotrue.log
       - PORT=9999
-      - WEBHOOK_URL=http://localhost:3000/webhooks/gotrue
-      - WEBHOOK_SECRET=structurify
-      - WEBHOOK_EVENTS=validate,signup,login
+      - GOTRUE_WEBHOOK_URL=http://localhost:3000/webhooks/gotrue
+      - GOTRUE_WEBHOOK_SECRET=structurify
+      - GOTRUE_WEBHOOK_EVENTS=validate,signup,login
+      - GOTRUE_WEBHOOK_RETRIES=10
+      - GOTRUE_WEBHOOK_TIMEOUT_SEC=30
     networks:
       - app-tier
 
