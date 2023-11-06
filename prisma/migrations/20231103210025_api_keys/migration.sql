@@ -2,8 +2,8 @@
 CREATE TABLE "api_keys" (
     "id" UUID NOT NULL,
     "name" TEXT,
-    "accessKey" TEXT,
-    "secretKey" TEXT,
+    "accessKey" TEXT NOT NULL,
+    "secretKey" TEXT NOT NULL,
     "projectId" UUID NOT NULL,
     "expiresAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
